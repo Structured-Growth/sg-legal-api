@@ -20,6 +20,7 @@ import { DocumentCreateParamsValidator } from "../../validators/document-create-
 import { DocumentReadParamsValidator } from "../../validators/document-read-params.validator";
 import { DocumentUpdateParamsValidator } from "../../validators/document-update-params.validator";
 import { DocumentDeleteParamsValidator } from "../../validators/document-delete-params.validator";
+import { EventMutation } from "@structured-growth/microservice-sdk";
 
 export const publicDocumentAttributes = [
 	"id",
@@ -82,6 +83,10 @@ export class DocumentsController extends BaseController {
 		const document = await this.documentsRepository.create(body);
 		this.response.status(201);
 
+		await this.eventBus.publish(
+			new EventMutation(this.principal.arn, document.arn, `${this.appPrefix}:documents/create`, JSON.stringify(body))
+		);
+
 		return {
 			...(pick(document.toJSON(), publicDocumentAttributes) as PublicDocumentAttributes),
 			arn: document.arn,
@@ -126,6 +131,10 @@ export class DocumentsController extends BaseController {
 	): Promise<PublicDocumentAttributes> {
 		const document = await this.documentsRepository.update(documentId, body);
 
+		await this.eventBus.publish(
+			new EventMutation(this.principal.arn, document.arn, `${this.appPrefix}:documents/update`, JSON.stringify(body))
+		);
+
 		return {
 			...(pick(document.toJSON(), publicDocumentAttributes) as PublicDocumentAttributes),
 			arn: document.arn,
@@ -142,7 +151,17 @@ export class DocumentsController extends BaseController {
 	@DescribeResource("Document", ({ params }) => Number(params.documentId))
 	@ValidateFuncArgs(DocumentDeleteParamsValidator)
 	async delete(@Path() documentId: number): Promise<void> {
+		const document = await this.documentsRepository.read(documentId);
+
+		if (!document) {
+			throw new NotFoundError(`Document ${documentId} not found`);
+		}
 		await this.documentsRepository.delete(documentId);
+
+		await this.eventBus.publish(
+			new EventMutation(this.principal.arn, document.arn, `${this.appPrefix}:documents/delete`, JSON.stringify({}))
+		);
+
 		this.response.status(204);
 	}
 }

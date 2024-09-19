@@ -20,6 +20,7 @@ import { AgreementCreateParamsValidator } from "../../validators/agreement-creat
 import { AgreementReadParamsValidator } from "../../validators/agreement-read-params.validator";
 import { AgreementUpdateParamsValidator } from "../../validators/agreement-update-params.validator";
 import { AgreementDeleteParamsValidator } from "../../validators/agreement-delete-params.validator";
+import { EventMutation } from "@structured-growth/microservice-sdk";
 
 export const publicAgreementAttributes = [
 	"id",
@@ -81,6 +82,10 @@ export class AgreementsController extends BaseController {
 		const agreement = await this.agreementsRepository.create(body);
 		this.response.status(201);
 
+		await this.eventBus.publish(
+			new EventMutation(this.principal.arn, agreement.arn, `${this.appPrefix}:agreements/create`, JSON.stringify(body))
+		);
+
 		return {
 			...(pick(agreement.toJSON(), publicAgreementAttributes) as PublicAgreementAttributes),
 			arn: agreement.arn,
@@ -125,6 +130,10 @@ export class AgreementsController extends BaseController {
 	): Promise<PublicAgreementAttributes> {
 		const agreement = await this.agreementsRepository.update(agreementId, body);
 
+		await this.eventBus.publish(
+			new EventMutation(this.principal.arn, agreement.arn, `${this.appPrefix}:agreements/update`, JSON.stringify(body))
+		);
+
 		return {
 			...(pick(agreement.toJSON(), publicAgreementAttributes) as PublicAgreementAttributes),
 			arn: agreement.arn,
@@ -141,7 +150,18 @@ export class AgreementsController extends BaseController {
 	@DescribeResource("Agreement", ({ params }) => Number(params.agreementId))
 	@ValidateFuncArgs(AgreementDeleteParamsValidator)
 	async delete(@Path() agreementId: number): Promise<void> {
+		const agreement = await this.agreementsRepository.read(agreementId);
+
+		if (!agreement) {
+			throw new NotFoundError(`Agreement ${agreementId} not found`);
+		}
+
 		await this.agreementsRepository.delete(agreementId);
+
+		await this.eventBus.publish(
+			new EventMutation(this.principal.arn, agreement.arn, `${this.appPrefix}:agreements/delete`, JSON.stringify({}))
+		);
+
 		this.response.status(204);
 	}
 }
