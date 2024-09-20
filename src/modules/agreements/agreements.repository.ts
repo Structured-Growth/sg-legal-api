@@ -20,6 +20,9 @@ export class AgreementsRepository
 		const order = params.sort ? (params.sort.map((item) => item.split(":")) as any) : [["createdAt", "desc"]];
 
 		params.orgId && (where["orgId"] = params.orgId);
+		params.documentId && (where["documentId"] = params.documentId);
+		params.accountId && (where["accountId"] = params.accountId);
+		params.userId && (where["userId"] = params.userId);
 		params.status && (where["status"] = params.status);
 		params.id && (where["id"] = { [Op.in]: params.id });
 		params.date && (where["date"] = params.date);
