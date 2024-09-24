@@ -5,7 +5,7 @@ export const AgreementSearchParamsValidator = joi.object({
 	query: joi
 		.object({
 			orgId: joi.number().positive().label("Organization ID"),
-			documentId: joi.number().positive().label("Document ID"),
+			documentId: joi.array().items(joi.number().positive()).label("Document ID"),
 			accountId: joi.number().positive().label("Account ID"),
 			userId: joi.number().positive().label("User ID"),
 			status: joi.string().valid("active", "inactive", "archived"),
