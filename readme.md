@@ -74,7 +74,7 @@ for automated build and push an image to a private docker registry.
 
 ### Configure GitHub workflow
 
-Firstly create a docker repository with the same name as package. For example `<aws_account_id>.dkr.ecr.<region>.amazonaws.com/api-service-starter-kit` 
+Firstly create a docker repository with the same name as package. For example `<aws_account_id>.dkr.ecr.<region>.amazonaws.com/sg-legal-api` 
 
 In order to create and push new image you have to set GitHub Actions Secrets that provides access to a private registry.
 
@@ -103,7 +103,7 @@ GITHUB_TOKEN=<your-token> npm run build-docker
 docker run --rm -it \
   --env-file ./.env -p 3300:3300 \
   --entrypoint npm \
-  structured-growth/api-service-starter-kit \
+  structured-growth/sg-legal-api \
   start web
 ```
 
@@ -112,7 +112,7 @@ docker run --rm -it \
 ```shell
 docker run --rm -it \
   --env-file ./.env -p 8080:8080 \
-  structured-growth/api-service-starter-kit \
+  structured-growth/sg-legal-api \
   .dist/src/lambda-http.handler
 ```
 
@@ -121,7 +121,7 @@ docker run --rm -it \
 ```shell
 docker run --rm -it \
   --env-file ./.env -p 8080:8080 \
-  structured-growth/api-service-starter-kit \
+  structured-growth/sg-legal-api \
   .dist/src/lambda-eventbridge.handler
 ```
 
@@ -130,7 +130,7 @@ docker run --rm -it \
 ```shell
 docker run --rm -it \
   --env-file ./.env -p 8080:8080 \
-  structured-growth/api-service-starter-kit \
+  structured-growth/sg-legal-api \
   .dist/src/lambda-sqs.handler
 ```
 
