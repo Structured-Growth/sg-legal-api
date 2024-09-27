@@ -16,6 +16,7 @@ import { AgreementSearchParamsInterface } from "../../interfaces/agreement-searc
 import { AgreementCreateBodyInterface } from "../../interfaces/agreement-create-body.interface";
 import { AgreementUpdateBodyInterface } from "../../interfaces/agreement-update-body.interface";
 import { AgreementSearchParamsValidator } from "../../validators/agreement-search-params.validator";
+import { AgreementSearchWithPostParamsValidator } from "../../validators/agreement-search-with-post-params.validator";
 import { AgreementCreateParamsValidator } from "../../validators/agreement-create-params.validator";
 import { AgreementReadParamsValidator } from "../../validators/agreement-read-params.validator";
 import { AgreementUpdateParamsValidator } from "../../validators/agreement-update-params.validator";
@@ -59,6 +60,30 @@ export class AgreementsController extends BaseController {
 		@Queries() query: AgreementSearchParamsInterface
 	): Promise<SearchResultInterface<PublicAgreementAttributes>> {
 		const { data, ...result } = await this.agreementsRepository.search(query);
+
+		return {
+			data: data.map((agreement) => ({
+				...(pick(agreement.toJSON(), publicAgreementAttributes) as PublicAgreementAttributes),
+				arn: agreement.arn,
+			})),
+			...result,
+		};
+	}
+
+	/**
+	 * Search agreements with POST
+	 */
+	@OperationId("Search agreements with POST")
+	@Post("/search")
+	@SuccessResponse(200, "Returns list of agreements")
+	@DescribeAction("agreements/search")
+	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
+	@ValidateFuncArgs(AgreementSearchWithPostParamsValidator)
+	async searchPost(
+		@Queries() query: {},
+		@Body() body: AgreementSearchParamsInterface
+	): Promise<SearchResultInterface<PublicAgreementAttributes>> {
+		const { data, ...result } = await this.agreementsRepository.search(body);
 
 		return {
 			data: data.map((agreement) => ({

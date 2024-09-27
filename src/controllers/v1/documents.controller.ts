@@ -16,6 +16,7 @@ import { DocumentSearchParamsInterface } from "../../interfaces/document-search-
 import { DocumentCreateBodyInterface } from "../../interfaces/document-create-body.interface";
 import { DocumentUpdateBodyInterface } from "../../interfaces/document-update-body.interface";
 import { DocumentSearchParamsValidator } from "../../validators/document-search-params.validator";
+import { DocumentSearchWithPostParamsValidator } from "../../validators/document-search-with-post-params.validator";
 import { DocumentCreateParamsValidator } from "../../validators/document-create-params.validator";
 import { DocumentReadParamsValidator } from "../../validators/document-read-params.validator";
 import { DocumentUpdateParamsValidator } from "../../validators/document-update-params.validator";
@@ -60,6 +61,30 @@ export class DocumentsController extends BaseController {
 		@Queries() query: DocumentSearchParamsInterface
 	): Promise<SearchResultInterface<PublicDocumentAttributes>> {
 		const { data, ...result } = await this.documentsRepository.search(query);
+
+		return {
+			data: data.map((document) => ({
+				...(pick(document.toJSON(), publicDocumentAttributes) as PublicDocumentAttributes),
+				arn: document.arn,
+			})),
+			...result,
+		};
+	}
+
+	/**
+	 * Search documents with POST
+	 */
+	@OperationId("Search documents with POST")
+	@Post("/search")
+	@SuccessResponse(200, "Returns list of documents")
+	@DescribeAction("documents/search")
+	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
+	@ValidateFuncArgs(DocumentSearchWithPostParamsValidator)
+	async searchPost(
+		@Queries() query: {},
+		@Body() body: DocumentSearchParamsInterface
+	): Promise<SearchResultInterface<PublicDocumentAttributes>> {
+		const { data, ...result } = await this.documentsRepository.search(body);
 
 		return {
 			data: data.map((document) => ({
