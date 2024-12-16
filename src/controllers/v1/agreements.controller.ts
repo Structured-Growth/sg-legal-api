@@ -55,6 +55,10 @@ export class AgreementsController extends BaseController {
 	@SuccessResponse(200, "Returns list of agreements")
 	@DescribeAction("agreements/search")
 	@DescribeResource("Organization", ({ query }) => Number(query.orgId))
+	@DescribeResource("Account", ({ query }) => Number(query.accountId))
+	@DescribeResource("User", ({ query }) => Number(query.userId))
+	@DescribeResource("Document", ({ query }) => query.documentId?.map(Number))
+	@DescribeResource("Agreement", ({ query }) => query.id?.map(Number))
 	@ValidateFuncArgs(AgreementSearchParamsValidator)
 	async search(
 		@Queries() query: AgreementSearchParamsInterface
@@ -78,6 +82,10 @@ export class AgreementsController extends BaseController {
 	@SuccessResponse(200, "Returns list of agreements")
 	@DescribeAction("agreements/search")
 	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
+	@DescribeResource("Account", ({ body }) => Number(body.accountId))
+	@DescribeResource("User", ({ body }) => Number(body.userId))
+	@DescribeResource("Document", ({ body }) => body.documentId?.map(Number))
+	@DescribeResource("Agreement", ({ body }) => body.id?.map(Number))
 	@ValidateFuncArgs(AgreementSearchWithPostParamsValidator)
 	async searchPost(
 		@Queries() query: {},
@@ -102,7 +110,10 @@ export class AgreementsController extends BaseController {
 	@SuccessResponse(201, "Returns created agreement")
 	@DescribeAction("agreements/create")
 	@ValidateFuncArgs(AgreementCreateParamsValidator)
-	@DescribeResource("Organization", ({ query }) => Number(query.orgId))
+	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
+	@DescribeResource("Account", ({ body }) => Number(body.accountId))
+	@DescribeResource("User", ({ body }) => Number(body.userId))
+	@DescribeResource("Document", ({ body }) => Number(body.documentId))
 	async create(@Queries() query: {}, @Body() body: AgreementCreateBodyInterface): Promise<PublicAgreementAttributes> {
 		const agreement = await this.agreementsRepository.create(body);
 		this.response.status(201);

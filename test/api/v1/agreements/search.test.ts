@@ -67,7 +67,31 @@ describe("GET /api/v1/agreements", () => {
 		const { statusCode, body } = await server.get("/v1/agreements").query({
 			"id[0]": context.agreementId,
 			orgId: 49,
-			documentId: context.documentId,
+			"documentId[0]": context.documentId,
+			accountId: 45,
+			userId: 15,
+			status: "active",
+		});
+		assert.equal(statusCode, 200);
+		assert.equal(body.data[0].id, context.agreementId);
+		assert.equal(body.data[0].orgId, 49);
+		assert.equal(body.data[0].documentId, context.documentId);
+		assert.equal(body.data[0].accountId, 45);
+		assert.equal(body.data[0].userId, 15);
+		assert.isString(body.data[0].createdAt);
+		assert.isString(body.data[0].updatedAt);
+		assert.equal(body.data[0].status, "active");
+		assert.isString(body.data[0].date);
+		assert.isString(body.data[0].arn);
+		assert.equal(body.page, 1);
+		assert.equal(body.limit, 20);
+	});
+
+	it("Should search with POST method", async () => {
+		const { statusCode, body } = await server.post("/v1/agreements/search").send({
+			id: [context.agreementId],
+			orgId: 49,
+			documentId: [context.documentId],
 			accountId: 45,
 			userId: 15,
 			status: "active",

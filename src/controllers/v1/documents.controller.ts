@@ -56,6 +56,7 @@ export class DocumentsController extends BaseController {
 	@SuccessResponse(200, "Returns list of documents")
 	@DescribeAction("documents/search")
 	@DescribeResource("Organization", ({ query }) => Number(query.orgId))
+	@DescribeResource("Document", ({ query }) => query.id?.map(Number))
 	@ValidateFuncArgs(DocumentSearchParamsValidator)
 	async search(
 		@Queries() query: DocumentSearchParamsInterface
@@ -79,6 +80,7 @@ export class DocumentsController extends BaseController {
 	@SuccessResponse(200, "Returns list of documents")
 	@DescribeAction("documents/search")
 	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
+	@DescribeResource("Document", ({ body }) => body.id?.map(Number))
 	@ValidateFuncArgs(DocumentSearchWithPostParamsValidator)
 	async searchPost(
 		@Queries() query: {},
@@ -103,7 +105,7 @@ export class DocumentsController extends BaseController {
 	@SuccessResponse(201, "Returns created document")
 	@DescribeAction("documents/create")
 	@ValidateFuncArgs(DocumentCreateParamsValidator)
-	@DescribeResource("Organization", ({ query }) => Number(query.orgId))
+	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
 	async create(@Queries() query: {}, @Body() body: DocumentCreateBodyInterface): Promise<PublicDocumentAttributes> {
 		const document = await this.documentsRepository.create(body);
 		this.response.status(201);

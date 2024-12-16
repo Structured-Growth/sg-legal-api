@@ -50,11 +50,11 @@ export class Document extends Model<DocumentAttributes, DocumentCreationAttribut
 	date: Date;
 
 	static get arnPattern(): string {
-		return [container.resolve("appPrefix"), "<region>", "<orgId>", "documents/<documentId>"].join(":");
+		return [container.resolve("appPrefix"), "<region>", "<orgId>", "<accountId>", "documents/<documentId>"].join(":");
 	}
 
 	get arn(): string {
-		return [container.resolve("appPrefix"), this.region, this.orgId, `documents/${this.id}`].join(":");
+		return [container.resolve("appPrefix"), this.region, this.orgId, "*", `documents/${this.id}`].join(":");
 	}
 }
 
