@@ -12,16 +12,20 @@ import {
 import { pick } from "lodash";
 import { AgreementAttributes } from "../../../database/models/agreement";
 import { AgreementsRepository } from "../../modules/agreements/agreements.repository";
+import { AgreementsService } from "../../modules/agreements/agreements.service";
 import { AgreementSearchParamsInterface } from "../../interfaces/agreement-search-params.interface";
 import { AgreementCreateBodyInterface } from "../../interfaces/agreement-create-body.interface";
 import { AgreementUpdateBodyInterface } from "../../interfaces/agreement-update-body.interface";
+import { AgreementCheckParamsInterface } from "../../interfaces/agreement-check-params.interface";
 import { AgreementSearchParamsValidator } from "../../validators/agreement-search-params.validator";
 import { AgreementSearchWithPostParamsValidator } from "../../validators/agreement-search-with-post-params.validator";
 import { AgreementCreateParamsValidator } from "../../validators/agreement-create-params.validator";
 import { AgreementReadParamsValidator } from "../../validators/agreement-read-params.validator";
 import { AgreementUpdateParamsValidator } from "../../validators/agreement-update-params.validator";
 import { AgreementDeleteParamsValidator } from "../../validators/agreement-delete-params.validator";
+import { AgreementCheckParamsValidator } from "../../validators/agreement-check-params.validator";
 import { EventMutation } from "@structured-growth/microservice-sdk";
+import { PublicDocumentAttributes, publicDocumentAttributes } from "./documents.controller";
 
 export const publicAgreementAttributes = [
 	"id",
@@ -43,7 +47,10 @@ export type PublicAgreementAttributes = Pick<AgreementAttributes, AgreementKeys>
 @Tags("Agreements")
 @autoInjectable()
 export class AgreementsController extends BaseController {
-	constructor(@inject("AgreementsRepository") private agreementsRepository: AgreementsRepository) {
+	constructor(
+		@inject("AgreementsRepository") private agreementsRepository: AgreementsRepository,
+		@inject("AgreementsService") private agreementsService: AgreementsService
+	) {
 		super();
 	}
 
@@ -115,7 +122,7 @@ export class AgreementsController extends BaseController {
 	@DescribeResource("User", ({ body }) => Number(body.userId))
 	@DescribeResource("Document", ({ body }) => Number(body.documentId))
 	async create(@Queries() query: {}, @Body() body: AgreementCreateBodyInterface): Promise<PublicAgreementAttributes> {
-		const agreement = await this.agreementsRepository.create(body);
+		const agreement = await this.agreementsService.create(body);
 		this.response.status(201);
 
 		await this.eventBus.publish(
@@ -125,6 +132,34 @@ export class AgreementsController extends BaseController {
 		return {
 			...(pick(agreement.toJSON(), publicAgreementAttributes) as PublicAgreementAttributes),
 			arn: agreement.arn,
+		};
+	}
+
+	/**
+	 * Check Agreement
+	 */
+	@OperationId("Check")
+	@Get("/check")
+	@SuccessResponse(200, "Returns agreement with last document version")
+	@DescribeAction("agreements/check")
+	@DescribeResource("Account", ({ query }) => Number(query.accountId))
+	@ValidateFuncArgs(AgreementCheckParamsValidator)
+	async check(
+		@Queries() query: AgreementCheckParamsInterface
+	): Promise<{ document: PublicDocumentAttributes; agreement: PublicAgreementAttributes | null }> {
+		const { document, agreement } = await this.agreementsService.check(query);
+
+		return {
+			document: {
+				...(pick(document.toJSON(), publicDocumentAttributes) as PublicDocumentAttributes),
+				arn: document.arn,
+			},
+			agreement: agreement
+				? {
+						...(pick(agreement.toJSON(), publicAgreementAttributes) as PublicAgreementAttributes),
+						arn: agreement.arn,
+				  }
+				: null,
 		};
 	}
 
