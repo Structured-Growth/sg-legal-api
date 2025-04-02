@@ -35,12 +35,12 @@ export class AgreementsService {
 	public async check(
 		params: AgreementCheckParamsInterface
 	): Promise<{ document: Document; agreement: Agreement | null }> {
-		const { accountId, code } = params;
+		const { accountId, documentCode } = params;
 
-		const document = await this.documentsRepository.search({ code, sort: ["version:desc"] });
+		const document = await this.documentsRepository.search({ code: documentCode, sort: ["version:desc"] });
 
 		if (document.data.length === 0) {
-			throw new NotFoundError(`Document with code ${code} not found`);
+			throw new NotFoundError(`Document with code ${documentCode} not found`);
 		}
 
 		const agreement = await this.agreementRepository.search({ accountId, documentId: [document.data[0].id] });

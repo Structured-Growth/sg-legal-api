@@ -137,6 +137,7 @@ export class AgreementsController extends BaseController {
 
 	/**
 	 * Check Agreement
+	 * Checks the current state of the document and whether it has been signed.
 	 */
 	@OperationId("Check")
 	@Get("/check")

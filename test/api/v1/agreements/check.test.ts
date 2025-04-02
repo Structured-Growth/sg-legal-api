@@ -14,7 +14,7 @@ describe("POST /api/v1/agreements/check", () => {
 		assert.equal(statusCode, 422);
 		assert.equal(body.name, "ValidationError");
 		assert.isString(body.validation.query.accountId[0]);
-		assert.isString(body.validation.query.code[0]);
+		assert.isString(body.validation.query.documentCode[0]);
 	});
 
 	it("Should create agreement", async () => {
@@ -50,10 +50,8 @@ describe("POST /api/v1/agreements/check", () => {
 	it("Should return agreement and latest document by code", async () => {
 		const { statusCode, body } = await server.get("/v1/agreements/check").query({
 			accountId: 45,
-			code: uniqueCode,
+			documentCode: uniqueCode,
 		});
-
-		console.log("Body: ", body);
 
 		assert.equal(statusCode, 200);
 
@@ -70,7 +68,7 @@ describe("POST /api/v1/agreements/check", () => {
 	it("Should return document and null agreement if agreement doesn't exist", async () => {
 		const { statusCode, body } = await server.get("/v1/agreements/check").query({
 			accountId: 999999,
-			code: uniqueCode,
+			documentCode: uniqueCode,
 		});
 
 		assert.equal(statusCode, 200);
@@ -79,5 +77,16 @@ describe("POST /api/v1/agreements/check", () => {
 		assert.equal(body.document.code, uniqueCode);
 
 		assert.isNull(body.agreement);
+	});
+
+	it("Should return 404 if document with provided code is not found", async () => {
+		const { statusCode, body } = await server.get("/v1/agreements/check").query({
+			accountId: 123,
+			documentCode: "non-existent-code-xyz",
+		});
+
+		assert.equal(statusCode, 404);
+		assert.equal(body.name, "NotFound");
+		assert.include(body.message, "Document with code non-existent-code-xyz not found");
 	});
 });
