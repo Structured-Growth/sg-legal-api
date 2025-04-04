@@ -58,4 +58,28 @@ describe("POST /api/v1/documents", () => {
 		assert.isString(body.validation.body.status[0]);
 		assert.isString(body.validation.body.date[0]);
 	});
+
+	it("Should return validation error if document with same code and version already exists", async () => {
+		const duplicateCode = `duplicate-code-${Date.now()}`;
+		const documentPayload = {
+			orgId: 49,
+			region: "us",
+			title: "Duplicate Document",
+			code: duplicateCode,
+			text: "Some text",
+			version: 1,
+			status: "active",
+			date: new Date().toISOString(),
+		};
+
+		const { statusCode: firstStatus } = await server.post("/v1/documents").send(documentPayload);
+		assert.equal(firstStatus, 201);
+
+		const { statusCode: secondStatus, body: errorBody } = await server.post("/v1/documents").send(documentPayload);
+		assert.equal(secondStatus, 422);
+		assert.equal(errorBody.name, "ValidationError");
+		assert.deepEqual(errorBody.validation?.documentId, [
+			"A document with this code and version has already been created.",
+		]);
+	});
 });

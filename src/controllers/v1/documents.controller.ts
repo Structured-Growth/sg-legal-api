@@ -12,6 +12,7 @@ import {
 import { pick } from "lodash";
 import { DocumentAttributes } from "../../../database/models/document";
 import { DocumentsRepository } from "../../modules/documents/documents.repository";
+import { DocumentsService } from "../../modules/documents/documents.service";
 import { DocumentSearchParamsInterface } from "../../interfaces/document-search-params.interface";
 import { DocumentCreateBodyInterface } from "../../interfaces/document-create-body.interface";
 import { DocumentUpdateBodyInterface } from "../../interfaces/document-update-body.interface";
@@ -44,7 +45,10 @@ export type PublicDocumentAttributes = Pick<DocumentAttributes, DocumentKeys>;
 @Tags("Documents")
 @autoInjectable()
 export class DocumentsController extends BaseController {
-	constructor(@inject("DocumentsRepository") private documentsRepository: DocumentsRepository) {
+	constructor(
+		@inject("DocumentsRepository") private documentsRepository: DocumentsRepository,
+		@inject("DocumentsService") private documentsService: DocumentsService
+	) {
 		super();
 	}
 
@@ -107,7 +111,7 @@ export class DocumentsController extends BaseController {
 	@ValidateFuncArgs(DocumentCreateParamsValidator)
 	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
 	async create(@Queries() query: {}, @Body() body: DocumentCreateBodyInterface): Promise<PublicDocumentAttributes> {
-		const document = await this.documentsRepository.create(body);
+		const document = await this.documentsService.create(body);
 		this.response.status(201);
 
 		await this.eventBus.publish(
