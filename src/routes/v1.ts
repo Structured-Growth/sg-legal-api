@@ -34,6 +34,7 @@ router.delete(pathPrefix + '/v1/documents/:documentId', handleRequest(Controller
 router.get(pathPrefix + '/v1/agreements', handleRequest(Controllers.AgreementsController, "search", handlerOpts));
 router.post(pathPrefix + '/v1/agreements/search', handleRequest(Controllers.AgreementsController, "searchPost", handlerOpts));
 router.post(pathPrefix + '/v1/agreements', handleRequest(Controllers.AgreementsController, "create", handlerOpts));
+router.get(pathPrefix + '/v1/agreements/check', handleRequest(Controllers.AgreementsController, "check", handlerOpts));
 router.get(pathPrefix + '/v1/agreements/:agreementId', handleRequest(Controllers.AgreementsController, "get", handlerOpts));
 router.put(pathPrefix + '/v1/agreements/:agreementId', handleRequest(Controllers.AgreementsController, "update", handlerOpts));
 router.delete(pathPrefix + '/v1/agreements/:agreementId', handleRequest(Controllers.AgreementsController, "delete", handlerOpts));
@@ -56,6 +57,7 @@ export const actionToRouteMap = {
 	"AgreementsController.search": 'get /v1/agreements',
 	"AgreementsController.searchPost": 'post /v1/agreements/search',
 	"AgreementsController.create": 'post /v1/agreements',
+	"AgreementsController.check": 'get /v1/agreements/check',
 	"AgreementsController.get": 'get /v1/agreements/:agreementId',
 	"AgreementsController.update": 'put /v1/agreements/:agreementId',
 	"AgreementsController.delete": 'delete /v1/agreements/:agreementId',

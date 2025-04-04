@@ -68,4 +68,43 @@ describe("POST /api/v1/agreements", () => {
 		assert.isString(body.validation.body.status[0]);
 		assert.isString(body.validation.body.date[0]);
 	});
+
+	it("Should return validation error if agreement with the same documentId already exists", async () => {
+		const uniqueCode = `contract-${Date.now()}`;
+
+		const { statusCode: statusCodeDocument, body: bodyDocument } = await server.post("/v1/documents").send({
+			orgId: 49,
+			region: "us",
+			title: "Contract",
+			code: uniqueCode,
+			text: "Very long contract text",
+			version: 1,
+			status: "active",
+			date: new Date().toISOString(),
+		});
+
+		assert.equal(statusCodeDocument, 201);
+		assert.isNumber(bodyDocument.id);
+		const documentId = bodyDocument.id;
+
+		const payload = {
+			orgId: 49,
+			region: "us",
+			documentId,
+			accountId: 45,
+			userId: 15,
+			status: "active",
+			date: new Date().toISOString(),
+		};
+
+		const { statusCode: createStatus, body: agreementBody } = await server.post("/v1/agreements").send(payload);
+		assert.equal(createStatus, 201);
+		assert.isNumber(agreementBody.id);
+
+		const { statusCode: duplicateStatus, body: errorBody } = await server.post("/v1/agreements").send(payload);
+		assert.equal(duplicateStatus, 422);
+		assert.equal(errorBody.name, "ValidationError");
+		assert.isDefined(errorBody.validation);
+		assert.deepEqual(errorBody.validation.documentId, ["A document with this ID has already been signed."]);
+	});
 });
