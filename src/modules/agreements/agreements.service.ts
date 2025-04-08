@@ -13,7 +13,10 @@ export class AgreementsService {
 	) {}
 
 	public async create(params: AgreementCreationAttributes): Promise<Agreement> {
-		const agreement = await this.agreementRepository.search({ documentId: [params.documentId] });
+		const agreement = await this.agreementRepository.search({
+			documentId: [params.documentId],
+			accountId: params.accountId,
+		});
 
 		if (agreement.data.length > 0) {
 			throw new ValidationError({
