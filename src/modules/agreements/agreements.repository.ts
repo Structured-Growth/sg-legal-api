@@ -4,6 +4,8 @@ import {
 	RepositoryInterface,
 	SearchResultInterface,
 	NotFoundError,
+	I18nType,
+	inject,
 } from "@structured-growth/microservice-sdk";
 import Agreement, { AgreementCreationAttributes, AgreementUpdateAttributes } from "../../../database/models/agreement";
 import { AgreementSearchParamsInterface } from "../../interfaces/agreement-search-params.interface";
@@ -12,6 +14,10 @@ import { AgreementSearchParamsInterface } from "../../interfaces/agreement-searc
 export class AgreementsRepository
 	implements RepositoryInterface<Agreement, AgreementSearchParamsInterface, AgreementCreationAttributes>
 {
+	private i18n: I18nType;
+	constructor(@inject("i18n") private getI18n: () => I18nType) {
+		this.i18n = this.getI18n();
+	}
 	public async search(params: AgreementSearchParamsInterface): Promise<SearchResultInterface<Agreement>> {
 		const page = params.page || 1;
 		let limit = params.limit || 20;
@@ -61,7 +67,9 @@ export class AgreementsRepository
 	public async update(id: number, params: AgreementUpdateAttributes): Promise<Agreement> {
 		const document = await this.read(id);
 		if (!document) {
-			throw new NotFoundError(`Agreement ${id} not found`);
+			throw new NotFoundError(
+				`${this.i18n.__("error.agreement.name")} ${id} ${this.i18n.__("error.common.not_found")}`
+			);
 		}
 		document.setAttributes(params);
 
@@ -72,7 +80,9 @@ export class AgreementsRepository
 		const n = await Agreement.destroy({ where: { id } });
 
 		if (n === 0) {
-			throw new NotFoundError(`Agreement ${id} not found`);
+			throw new NotFoundError(
+				`${this.i18n.__("error.agreement.name")} ${id} ${this.i18n.__("error.common.not_found")}`
+			);
 		}
 	}
 }

@@ -1,17 +1,23 @@
-import { autoInjectable, inject, ValidationError } from "@structured-growth/microservice-sdk";
+import { autoInjectable, inject, ValidationError, I18nType } from "@structured-growth/microservice-sdk";
 import { DocumentsRepository } from "./documents.repository";
 import Document, { DocumentCreationAttributes } from "../../../database/models/document";
 
 @autoInjectable()
 export class DocumentsService {
-	constructor(@inject("DocumentsRepository") private documentRepository: DocumentsRepository) {}
+	private i18n: I18nType;
+	constructor(
+		@inject("DocumentsRepository") private documentRepository: DocumentsRepository,
+		@inject("i18n") private getI18n: () => I18nType
+	) {
+		this.i18n = this.getI18n();
+	}
 
 	public async create(params: DocumentCreationAttributes): Promise<Document> {
 		const document = await this.documentRepository.search({ code: params.code, version: params.version });
 
 		if (document.data.length > 0) {
 			throw new ValidationError({
-				documentId: ["A document with this code and version has already been created."],
+				documentId: [this.i18n.__("error.document.document_created")],
 			});
 		}
 
