@@ -8,6 +8,7 @@ import {
 	NotFoundError,
 	SearchResultInterface,
 	ValidateFuncArgs,
+	I18nType,
 } from "@structured-growth/microservice-sdk";
 import { pick } from "lodash";
 import { AgreementAttributes } from "../../../database/models/agreement";
@@ -47,11 +48,14 @@ export type PublicAgreementAttributes = Pick<AgreementAttributes, AgreementKeys>
 @Tags("Agreements")
 @autoInjectable()
 export class AgreementsController extends BaseController {
+	private i18n: I18nType;
 	constructor(
 		@inject("AgreementsRepository") private agreementsRepository: AgreementsRepository,
-		@inject("AgreementsService") private agreementsService: AgreementsService
+		@inject("AgreementsService") private agreementsService: AgreementsService,
+		@inject("i18n") private getI18n: () => I18nType
 	) {
 		super();
+		this.i18n = this.getI18n();
 	}
 
 	/**
@@ -177,7 +181,9 @@ export class AgreementsController extends BaseController {
 		const agreement = await this.agreementsRepository.read(agreementId);
 
 		if (!agreement) {
-			throw new NotFoundError(`Agreement ${agreement} not found`);
+			throw new NotFoundError(
+				`${this.i18n.__("error.agreement.name")} ${agreement} ${this.i18n.__("error.common.not_found")}`
+			);
 		}
 
 		return {
@@ -225,7 +231,9 @@ export class AgreementsController extends BaseController {
 		const agreement = await this.agreementsRepository.read(agreementId);
 
 		if (!agreement) {
-			throw new NotFoundError(`Agreement ${agreementId} not found`);
+			throw new NotFoundError(
+				`${this.i18n.__("error.agreement.name")} ${agreementId} ${this.i18n.__("error.common.not_found")}`
+			);
 		}
 
 		await this.agreementsRepository.delete(agreementId);

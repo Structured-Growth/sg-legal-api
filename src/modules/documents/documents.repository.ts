@@ -4,6 +4,8 @@ import {
 	RepositoryInterface,
 	SearchResultInterface,
 	NotFoundError,
+	I18nType,
+	inject,
 } from "@structured-growth/microservice-sdk";
 import Document, { DocumentCreationAttributes, DocumentUpdateAttributes } from "../../../database/models/document";
 import { DocumentSearchParamsInterface } from "../../interfaces/document-search-params.interface";
@@ -12,6 +14,10 @@ import { DocumentSearchParamsInterface } from "../../interfaces/document-search-
 export class DocumentsRepository
 	implements RepositoryInterface<Document, DocumentSearchParamsInterface, DocumentCreationAttributes>
 {
+	private i18n: I18nType;
+	constructor(@inject("i18n") private getI18n: () => I18nType) {
+		this.i18n = this.getI18n();
+	}
 	public async search(params: DocumentSearchParamsInterface): Promise<SearchResultInterface<Document>> {
 		const page = params.page || 1;
 		let limit = params.limit || 20;
@@ -64,7 +70,7 @@ export class DocumentsRepository
 	public async update(id: number, params: DocumentUpdateAttributes): Promise<Document> {
 		const document = await this.read(id);
 		if (!document) {
-			throw new NotFoundError(`Document ${id} not found`);
+			throw new NotFoundError(`${this.i18n.__("error.document.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
 		}
 		document.setAttributes(params);
 
@@ -75,7 +81,7 @@ export class DocumentsRepository
 		const n = await Document.destroy({ where: { id } });
 
 		if (n === 0) {
-			throw new NotFoundError(`Document ${id} not found`);
+			throw new NotFoundError(`${this.i18n.__("error.document.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
 		}
 	}
 }
