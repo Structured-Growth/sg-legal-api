@@ -8,6 +8,7 @@ import {
 	NotFoundError,
 	SearchResultInterface,
 	ValidateFuncArgs,
+	I18nType,
 } from "@structured-growth/microservice-sdk";
 import { pick } from "lodash";
 import { DocumentAttributes } from "../../../database/models/document";
@@ -45,11 +46,14 @@ export type PublicDocumentAttributes = Pick<DocumentAttributes, DocumentKeys>;
 @Tags("Documents")
 @autoInjectable()
 export class DocumentsController extends BaseController {
+	private i18n: I18nType;
 	constructor(
 		@inject("DocumentsRepository") private documentsRepository: DocumentsRepository,
-		@inject("DocumentsService") private documentsService: DocumentsService
+		@inject("DocumentsService") private documentsService: DocumentsService,
+		@inject("i18n") private getI18n: () => I18nType
 	) {
 		super();
+		this.i18n = this.getI18n();
 	}
 
 	/**
@@ -137,7 +141,9 @@ export class DocumentsController extends BaseController {
 		const document = await this.documentsRepository.read(documentId);
 
 		if (!document) {
-			throw new NotFoundError(`Document ${document} not found`);
+			throw new NotFoundError(
+				`${this.i18n.__("error.document.name")} ${document} ${this.i18n.__("error.common.not_found")}`
+			);
 		}
 
 		return {
@@ -185,7 +191,9 @@ export class DocumentsController extends BaseController {
 		const document = await this.documentsRepository.read(documentId);
 
 		if (!document) {
-			throw new NotFoundError(`Document ${documentId} not found`);
+			throw new NotFoundError(
+				`${this.i18n.__("error.document.name")} ${documentId} ${this.i18n.__("error.common.not_found")}`
+			);
 		}
 		await this.documentsRepository.delete(documentId);
 

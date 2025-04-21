@@ -1,4 +1,4 @@
-import { autoInjectable, inject, NotFoundError, ValidationError } from "@structured-growth/microservice-sdk";
+import { autoInjectable, inject, NotFoundError, ValidationError, I18nType } from "@structured-growth/microservice-sdk";
 import { AgreementsRepository } from "./agreements.repository";
 import { DocumentsRepository } from "../documents/documents.repository";
 import { AgreementCheckParamsInterface } from "../../interfaces/agreement-check-params.interface";
@@ -7,10 +7,14 @@ import Document from "../../../database/models/document";
 
 @autoInjectable()
 export class AgreementsService {
+	private i18n: I18nType;
 	constructor(
 		@inject("AgreementsRepository") private agreementRepository: AgreementsRepository,
-		@inject("DocumentsRepository") private documentsRepository: DocumentsRepository
-	) {}
+		@inject("DocumentsRepository") private documentsRepository: DocumentsRepository,
+		@inject("i18n") private getI18n: () => I18nType
+	) {
+		this.i18n = this.getI18n();
+	}
 
 	public async create(params: AgreementCreationAttributes): Promise<Agreement> {
 		const agreement = await this.agreementRepository.search({
@@ -20,7 +24,7 @@ export class AgreementsService {
 
 		if (agreement.data.length > 0) {
 			throw new ValidationError({
-				documentId: ["A document with this ID has already been signed."],
+				documentId: [this.i18n.__("error.agreement.document_signed")],
 			});
 		}
 
@@ -43,7 +47,9 @@ export class AgreementsService {
 		const document = await this.documentsRepository.search({ code: documentCode, sort: ["version:desc"] });
 
 		if (document.data.length === 0) {
-			throw new NotFoundError(`Document with code ${documentCode} not found`);
+			throw new NotFoundError(
+				`${this.i18n.__("error.agreement.document")} ${documentCode} ${this.i18n.__("error.common.not_found")}`
+			);
 		}
 
 		const agreement = await this.agreementRepository.search({ accountId, documentId: [document.data[0].id] });

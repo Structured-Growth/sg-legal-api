@@ -1,0 +1,51 @@
+{
+  "system": {
+    "ping":  {
+      "am": "I'm",
+      "service": "service"
+    }
+  },
+  "error": {
+    "common": {
+      "not_found": "not found"
+    },
+    "agreement": {
+      "name": "Agreement",
+      "document_signed": "A document with this ID has already been signed.",
+      "document": "Document with code"
+    },
+    "document": {
+      "name": "Document",
+      "document_created": "A document with this code and version has already been created."
+    }
+  },
+  "validator": {
+    "common": {
+      "id": "Entity IDs",
+      "arn": "Entity ARNs",
+      "page": "Page",
+      "limit": "Limit",
+      "sort": "Sort"
+    },
+    "agreements": {
+      "orgId": "Organization Id",
+      "region": "Region",
+      "documentId": "Document ID",
+      "accountId": "Account Id",
+      "userId": "User ID",
+      "date": "Date",
+      "documentCode": "Code",
+      "agreementId": "Agreement Id"
+    },
+    "documents": {
+      "orgId": "Organization Id",
+      "region": "Region",
+      "title": "Title",
+      "code": "Code",
+      "text": "Text",
+      "version": "Version",
+      "date": "Date",
+      "documentId": "Document Id"
+    }
+  }
+}
