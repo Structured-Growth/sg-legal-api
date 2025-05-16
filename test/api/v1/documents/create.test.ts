@@ -111,7 +111,7 @@ describe("POST /api/v1/documents", () => {
 		assert.equal(secondStatus, 422);
 		assert.equal(errorBody.name, "ValidationError");
 		assert.deepEqual(errorBody.validation?.documentId, [
-			"A document with this code and version has already been created.",
+			"A document with this code, version, orgId and locale has already been created.",
 		]);
 	});
 });

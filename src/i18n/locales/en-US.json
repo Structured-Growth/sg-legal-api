@@ -16,7 +16,7 @@
     },
     "document": {
       "name": "Document",
-      "document_created": "A document with this code and version has already been created."
+      "document_created": "A document with this code, version, orgId and locale has already been created."
     }
   },
   "validator": {

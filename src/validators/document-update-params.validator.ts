@@ -8,7 +8,7 @@ export const DocumentUpdateParamsValidator = joi.object({
 		code: joi.string().max(100).label("validator.documents.code"),
 		text: joi.string().label("validator.documents.text"),
 		version: joi.number().positive().label("validator.documents.version"),
-		locale: joi.string().max(15).label("validator.documents.locale"),
+		locale: joi.string().max(15).allow("").label("validator.documents.locale"),
 		status: joi.string().valid("active", "inactive", "archived"),
 		date: joi.date().iso().label("validator.documents.date"),
 	}),

@@ -167,7 +167,7 @@ export class DocumentsController extends BaseController {
 		@Queries() query: {},
 		@Body() body: DocumentUpdateBodyInterface
 	): Promise<PublicDocumentAttributes> {
-		const document = await this.documentsRepository.update(documentId, body);
+		const document = await this.documentsService.update(documentId, body);
 
 		await this.eventBus.publish(
 			new EventMutation(this.principal.arn, document.arn, `${this.appPrefix}:documents/update`, JSON.stringify(body))
