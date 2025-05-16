@@ -33,6 +33,7 @@ export const publicDocumentAttributes = [
 	"code",
 	"text",
 	"version",
+	"locale",
 	"status",
 	"date",
 	"createdAt",

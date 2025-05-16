@@ -5,6 +5,7 @@ export interface DocumentUpdateBodyInterface {
 	code?: string;
 	text?: string;
 	version?: number;
+	locale?: string;
 	status?: DocumentAttributes["status"];
 	date?: Date;
 }

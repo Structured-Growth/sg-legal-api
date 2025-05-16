@@ -6,6 +6,7 @@ export interface DocumentAttributes extends Omit<DefaultModelInterface, "account
 	code: string;
 	text: string;
 	version: number;
+	locale?: string | null;
 	date: Date | any;
 	status: "active" | "inactive" | "archived";
 }
@@ -14,7 +15,9 @@ export interface DocumentCreationAttributes
 	extends Omit<DocumentAttributes, "id" | "arn" | "createdAt" | "updatedAt" | "deletedAt"> {}
 
 export interface DocumentUpdateAttributes
-	extends Partial<Pick<DocumentCreationAttributes, "status" | "title" | "code" | "text" | "version" | "date">> {}
+	extends Partial<
+		Pick<DocumentCreationAttributes, "status" | "title" | "code" | "text" | "version" | "locale" | "date">
+	> {}
 
 @Table({
 	tableName: "documents",
@@ -40,6 +43,9 @@ export class Document extends Model<DocumentAttributes, DocumentCreationAttribut
 
 	@Column
 	version: number;
+
+	@Column(DataType.STRING)
+	locale: string | null;
 
 	@Column(DataType.STRING)
 	status: DocumentAttributes["status"];

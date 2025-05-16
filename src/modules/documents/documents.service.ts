@@ -13,7 +13,12 @@ export class DocumentsService {
 	}
 
 	public async create(params: DocumentCreationAttributes): Promise<Document> {
-		const document = await this.documentRepository.search({ code: params.code, version: params.version });
+		const document = await this.documentRepository.search({
+			code: params.code,
+			version: params.version,
+			orgId: params.orgId,
+			locale: [params.locale ?? null],
+		});
 
 		if (document.data.length > 0) {
 			throw new ValidationError({
@@ -28,6 +33,7 @@ export class DocumentsService {
 			code: params.code,
 			text: params.text,
 			version: params.version,
+			locale: params.locale ?? null,
 			status: params.status,
 			date: params.date,
 		});
