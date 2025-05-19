@@ -42,20 +42,38 @@ export class AgreementsService {
 	public async check(
 		params: AgreementCheckParamsInterface
 	): Promise<{ document: Document; agreement: Agreement | null }> {
+		console.log("i18n: ", this.i18n);
 		const { accountId, documentCode } = params;
 
-		const document = await this.documentsRepository.search({ code: documentCode, sort: ["version:desc"] });
+		const documentLangVersion = await this.documentsRepository.search({
+			code: documentCode,
+			locale: [this.i18n.locale],
+			sort: ["version:desc"],
+		});
 
-		if (document.data.length === 0) {
-			throw new NotFoundError(
-				`${this.i18n.__("error.agreement.document")} ${documentCode} ${this.i18n.__("error.common.not_found")}`
-			);
+		let document;
+
+		if (documentLangVersion.data.length === 0) {
+			const documentResult = await this.documentsRepository.search({
+				code: documentCode,
+				sort: ["version:desc"],
+			});
+
+			if (documentResult.data.length === 0) {
+				throw new NotFoundError(
+					`${this.i18n.__("error.agreement.document")} ${documentCode} ${this.i18n.__("error.common.not_found")}`
+				);
+			}
+
+			document = documentResult.data[0];
+		} else {
+			document = documentLangVersion.data[0];
 		}
 
-		const agreement = await this.agreementRepository.search({ accountId, documentId: [document.data[0].id] });
+		const agreement = await this.agreementRepository.search({ accountId, documentId: [document.id] });
 
 		return {
-			document: document.data[0],
+			document,
 			agreement: agreement.data.length > 0 ? agreement.data[0] : null,
 		};
 	}
