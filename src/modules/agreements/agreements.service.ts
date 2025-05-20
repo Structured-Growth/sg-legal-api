@@ -42,12 +42,11 @@ export class AgreementsService {
 	public async check(
 		params: AgreementCheckParamsInterface
 	): Promise<{ document: Document; agreement: Agreement | null }> {
-		console.log("i18n: ", this.i18n);
 		const { accountId, documentCode } = params;
 
 		const documentLangVersion = await this.documentsRepository.search({
 			code: documentCode,
-			locale: [this.i18n.locale],
+			locale: [this.i18n.acceptLanguage || this.i18n.locale],
 			sort: ["version:desc"],
 		});
 
@@ -56,6 +55,7 @@ export class AgreementsService {
 		if (documentLangVersion.data.length === 0) {
 			const documentResult = await this.documentsRepository.search({
 				code: documentCode,
+				locale: null,
 				sort: ["version:desc"],
 			});
 
