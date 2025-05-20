@@ -16,7 +16,7 @@
     },
     "document": {
       "name": "Document",
-      "document_created": "A document with this code and version has already been created."
+      "document_created": "A document with this code, version, orgId and locale has already been created."
     }
   },
   "validator": {
@@ -44,6 +44,7 @@
       "code": "Code",
       "text": "Text",
       "version": "Version",
+      "locale": "Locale",
       "date": "Date",
       "documentId": "Document Id"
     }

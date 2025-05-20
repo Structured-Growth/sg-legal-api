@@ -6,6 +6,7 @@ export interface DocumentSearchParamsInterface extends Omit<DefaultSearchParamsI
 	title?: string;
 	code?: string;
 	version?: number;
+	locale?: string[];
 	status?: DocumentAttributes["status"];
 	date?: Date;
 }

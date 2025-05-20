@@ -15,6 +15,7 @@ describe("DELETE /api/v1/documents/:documentId", () => {
 			code: uniqueCode,
 			text: "Very long contract text",
 			version: 1,
+			locale: "en-US",
 			status: "active",
 			date: new Date().toISOString(),
 		});

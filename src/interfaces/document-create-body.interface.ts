@@ -6,6 +6,7 @@ export interface DocumentCreateBodyInterface {
 	code: string;
 	text: string;
 	version: number;
+	locale?: string;
 	status: "active" | "inactive";
 	date: Date;
 }
