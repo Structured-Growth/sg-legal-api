@@ -25,6 +25,7 @@ describe("POST /api/v1/agreements/check", () => {
 			code: uniqueCode,
 			text: "Very long contract text",
 			version: 1,
+			locale: "en-US",
 			status: "active",
 			date: new Date().toISOString(),
 		});
@@ -88,5 +89,72 @@ describe("POST /api/v1/agreements/check", () => {
 		assert.equal(statusCode, 404);
 		assert.equal(body.name, "NotFound");
 		assert.include(body.message, "Document with code non-existent-code-xyz not found");
+	});
+
+	it("Should fallback to document without locale if localized version not found", async () => {
+		const code = `contract-fallback-${Date.now()}`;
+
+		const { body: docBody } = await server.post("/v1/documents").send({
+			orgId: 49,
+			region: "us",
+			title: "Unlocalized Contract",
+			code,
+			text: "Fallback contract text",
+			version: 1,
+			status: "active",
+			date: new Date().toISOString(),
+		});
+
+		assert.isNumber(docBody.id);
+
+		const { statusCode, body } = await server.get("/v1/agreements/check").query({
+			accountId: 999,
+			documentCode: code,
+		});
+
+		assert.equal(statusCode, 200);
+		assert.equal(body.document.code, code);
+		assert.isNull(body.agreement);
+	});
+
+	it("Should prioritize localized document if it exists", async () => {
+		const code = `contract-locale-${Date.now()}`;
+
+		const { body: localizedDoc } = await server.post("/v1/documents").send({
+			orgId: 49,
+			region: "us",
+			title: "Localized Contract",
+			code,
+			text: "Texto traduzido",
+			version: 1,
+			locale: "en-US",
+			status: "active",
+			date: new Date().toISOString(),
+		});
+		assert.isNumber(localizedDoc.id);
+
+		await server.post("/v1/documents").send({
+			orgId: 49,
+			region: "us",
+			title: "Fallback Contract",
+			code,
+			text: "English fallback",
+			version: 2,
+			status: "active",
+			date: new Date().toISOString(),
+		});
+
+		const { statusCode, body } = await server.get("/v1/agreements/check").set("Accept-Language", "en-US").query({
+			accountId: 123,
+			documentCode: code,
+		});
+
+		assert.equal(statusCode, 200);
+		assert.isObject(body.document);
+		assert.equal(body.document.code, code);
+		assert.equal(body.document.locale, "en-US");
+		assert.equal(body.document.id, localizedDoc.id);
+
+		assert.isNull(body.agreement);
 	});
 });

@@ -5,7 +5,37 @@ import { initTest } from "../../../common/init-test";
 describe("POST /api/v1/documents", () => {
 	const { server, context } = initTest();
 
-	it("Should create document", async () => {
+	it("Should create document with locale", async () => {
+		const uniqueCode = `contract-${Date.now()}`;
+
+		const { statusCode, body } = await server.post("/v1/documents").send({
+			orgId: 49,
+			region: "us",
+			title: "Contract",
+			code: uniqueCode,
+			text: "Very long contract text",
+			version: 1,
+			locale: "en-US",
+			status: "active",
+			date: new Date().toISOString(),
+		});
+		assert.equal(statusCode, 201);
+		assert.isNumber(body.id);
+		assert.equal(body.orgId, 49);
+		assert.equal(body.region, "us");
+		assert.equal(body.title, "Contract");
+		assert.equal(body.code, uniqueCode);
+		assert.equal(body.text, "Very long contract text");
+		assert.equal(body.version, 1);
+		assert.equal(body.locale, "en-US");
+		assert.isNotNaN(new Date(body.createdAt).getTime());
+		assert.isNotNaN(new Date(body.updatedAt).getTime());
+		assert.equal(body.status, "active");
+		assert.isNotNaN(new Date(body.date).getTime());
+		assert.isString(body.arn);
+	});
+
+	it("Should create document without locale", async () => {
 		const uniqueCode = `contract-${Date.now()}`;
 
 		const { statusCode, body } = await server.post("/v1/documents").send({
@@ -26,6 +56,7 @@ describe("POST /api/v1/documents", () => {
 		assert.equal(body.code, uniqueCode);
 		assert.equal(body.text, "Very long contract text");
 		assert.equal(body.version, 1);
+		assert.equal(body.locale, null);
 		assert.isNotNaN(new Date(body.createdAt).getTime());
 		assert.isNotNaN(new Date(body.updatedAt).getTime());
 		assert.equal(body.status, "active");
@@ -68,6 +99,7 @@ describe("POST /api/v1/documents", () => {
 			code: duplicateCode,
 			text: "Some text",
 			version: 1,
+			locale: "en-US",
 			status: "active",
 			date: new Date().toISOString(),
 		};
@@ -79,7 +111,7 @@ describe("POST /api/v1/documents", () => {
 		assert.equal(secondStatus, 422);
 		assert.equal(errorBody.name, "ValidationError");
 		assert.deepEqual(errorBody.validation?.documentId, [
-			"A document with this code and version has already been created.",
+			"A document with this code, version, orgId and locale has already been created.",
 		]);
 	});
 });

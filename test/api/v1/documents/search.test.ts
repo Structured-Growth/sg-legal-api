@@ -14,6 +14,7 @@ describe("GET /api/v1/documents", () => {
 			code: uniqueCode,
 			text: "Very long contract text",
 			version: 1,
+			locale: "en-US",
 			status: "active",
 			date: new Date().toISOString(),
 		});
@@ -28,6 +29,7 @@ describe("GET /api/v1/documents", () => {
 			title: null,
 			code: null,
 			version: "version",
+			locale: "en-US",
 			date: 21,
 			id: -1,
 			arn: 1,
@@ -56,6 +58,7 @@ describe("GET /api/v1/documents", () => {
 			title: "Contract",
 			code: uniqueCode,
 			version: 1,
+			"locale[0]": "en-US",
 			status: "active",
 		});
 		assert.equal(statusCode, 200);
@@ -64,6 +67,7 @@ describe("GET /api/v1/documents", () => {
 		assert.equal(body.data[0].title, "Contract");
 		assert.equal(body.data[0].code, uniqueCode);
 		assert.equal(body.data[0].version, 1);
+		assert.equal(body.data[0].locale, "en-US");
 		assert.isString(body.data[0].createdAt);
 		assert.isString(body.data[0].updatedAt);
 		assert.equal(body.data[0].status, "active");

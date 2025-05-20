@@ -14,6 +14,7 @@ describe("PUT /api/v1/documents/:documentId", () => {
 			code: uniqueCode,
 			text: "Very long contract text",
 			version: 1,
+			locale: "en-US",
 			status: "active",
 			date: new Date().toISOString(),
 		});
@@ -28,6 +29,7 @@ describe("PUT /api/v1/documents/:documentId", () => {
 			code: uniqueCode + 25,
 			text: "Very short contract text",
 			version: 2,
+			locale: "pt-BR",
 			status: "archived",
 			date: new Date().toISOString(),
 		});
@@ -38,6 +40,7 @@ describe("PUT /api/v1/documents/:documentId", () => {
 		assert.equal(body.code, uniqueCode + 25);
 		assert.equal(body.text, "Very short contract text");
 		assert.equal(body.version, 2);
+		assert.equal(body.locale, "pt-BR");
 		assert.isString(body.createdAt);
 		assert.isString(body.updatedAt);
 		assert.equal(body.status, "archived");
@@ -51,6 +54,7 @@ describe("PUT /api/v1/documents/:documentId", () => {
 			code: 25,
 			text: 100,
 			version: "version",
+			locale: 21,
 			status: "pending",
 			date: 77,
 		});
@@ -63,6 +67,7 @@ describe("PUT /api/v1/documents/:documentId", () => {
 		assert.isString(body.validation.body.code[0]);
 		assert.isString(body.validation.body.text[0]);
 		assert.isString(body.validation.body.version[0]);
+		assert.isString(body.validation.body.locale[0]);
 		assert.isString(body.validation.body.status[0]);
 		assert.isString(body.validation.body.date[0]);
 	});

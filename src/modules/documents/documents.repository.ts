@@ -35,6 +35,11 @@ export class DocumentsRepository
 		params.status && (where["status"] = params.status);
 		params.id && (where["id"] = { [Op.in]: params.id });
 		params.date && (where["date"] = params.date);
+		if (params.locale === null) {
+			where["locale"] = { [Op.is]: null };
+		} else if (Array.isArray(params.locale)) {
+			where["locale"] = { [Op.in]: params.locale };
+		}
 
 		const { rows, count } = await Document.findAndCountAll({
 			where,
