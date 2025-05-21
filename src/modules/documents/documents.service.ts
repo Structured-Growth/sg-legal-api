@@ -52,7 +52,7 @@ export class DocumentsService {
 			locale: [params.locale ?? null],
 		});
 
-		if (duplicate.data.some((doc) => doc.id !== id)) {
+		if (duplicate.data.some((doc) => Number(doc.id) !== Number(id))) {
 			throw new ValidationError({
 				documentId: [this.i18n.__("error.document.document_created")],
 			});
