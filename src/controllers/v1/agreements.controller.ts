@@ -9,6 +9,7 @@ import {
 	SearchResultInterface,
 	ValidateFuncArgs,
 	I18nType,
+	HashFields,
 } from "@structured-growth/microservice-sdk";
 import { pick } from "lodash";
 import { AgreementAttributes } from "../../../database/models/agreement";
@@ -148,6 +149,7 @@ export class AgreementsController extends BaseController {
 	@SuccessResponse(200, "Returns agreement with last document version")
 	@DescribeAction("agreements/check")
 	@DescribeResource("Account", ({ query }) => Number(query.accountId))
+	@HashFields(["documentCode", "title", "code", "text"])
 	@ValidateFuncArgs(AgreementCheckParamsValidator)
 	async check(
 		@Queries() query: AgreementCheckParamsInterface
