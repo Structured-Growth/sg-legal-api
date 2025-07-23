@@ -9,6 +9,7 @@ import {
 	SearchResultInterface,
 	ValidateFuncArgs,
 	I18nType,
+	HashFields,
 } from "@structured-growth/microservice-sdk";
 import { pick } from "lodash";
 import { DocumentAttributes } from "../../../database/models/document";
@@ -66,6 +67,7 @@ export class DocumentsController extends BaseController {
 	@DescribeAction("documents/search")
 	@DescribeResource("Organization", ({ query }) => Number(query.orgId))
 	@DescribeResource("Document", ({ query }) => query.id?.map(Number))
+	@HashFields(["title", "code", "text"])
 	@ValidateFuncArgs(DocumentSearchParamsValidator)
 	async search(
 		@Queries() query: DocumentSearchParamsInterface
@@ -90,6 +92,7 @@ export class DocumentsController extends BaseController {
 	@DescribeAction("documents/search")
 	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
 	@DescribeResource("Document", ({ body }) => body.id?.map(Number))
+	@HashFields(["title", "code", "text"])
 	@ValidateFuncArgs(DocumentSearchWithPostParamsValidator)
 	async searchPost(
 		@Queries() query: {},
@@ -114,6 +117,7 @@ export class DocumentsController extends BaseController {
 	@SuccessResponse(201, "Returns created document")
 	@DescribeAction("documents/create")
 	@ValidateFuncArgs(DocumentCreateParamsValidator)
+	@HashFields(["title", "code", "text"])
 	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
 	async create(@Queries() query: {}, @Body() body: DocumentCreateBodyInterface): Promise<PublicDocumentAttributes> {
 		const document = await this.documentsService.create(body);
@@ -137,6 +141,7 @@ export class DocumentsController extends BaseController {
 	@SuccessResponse(200, "Returns document")
 	@DescribeAction("documents/read")
 	@DescribeResource("Document", ({ params }) => Number(params.documentId))
+	@HashFields(["title", "code", "text"])
 	@ValidateFuncArgs(DocumentReadParamsValidator)
 	async get(@Path() documentId: number): Promise<PublicDocumentAttributes> {
 		const document = await this.documentsRepository.read(documentId);
@@ -161,6 +166,7 @@ export class DocumentsController extends BaseController {
 	@SuccessResponse(200, "Returns updated document")
 	@DescribeAction("documents/update")
 	@DescribeResource("Document", ({ params }) => Number(params.documentId))
+	@HashFields(["title", "code", "text"])
 	@ValidateFuncArgs(DocumentUpdateParamsValidator)
 	async update(
 		@Path() documentId: number,
