@@ -26,6 +26,7 @@ import { DocumentUpdateParamsValidator } from "../../validators/document-update-
 import { DocumentDeleteParamsValidator } from "../../validators/document-delete-params.validator";
 import { EventMutation } from "@structured-growth/microservice-sdk";
 
+// For devops
 export const publicDocumentAttributes = [
 	"id",
 	"orgId",
