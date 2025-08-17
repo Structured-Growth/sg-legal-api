@@ -7,7 +7,7 @@ export function loadEnvironment() {
 	loader.loadAndValidate(process.env.__PATH_TO_ENV_FILE || ".env", {
 		APP_PREFIX: joi.string().required().max(30).min(2),
 		HTTP_PORT: joi.number().positive().required(),
-		STAGE: joi.string().valid("dev", "qual", "prod").required(),
+		STAGE: joi.string().valid("dev", "qual", "prod", "test").required(),
 		REGION: joi
 			.valid(
 				"us-east-1",
@@ -26,7 +26,9 @@ export function loadEnvironment() {
 				"eu-west-2",
 				"eu-west-3",
 				"eu-north-1",
-				"sa-east-1"
+				"sa-east-1",
+				"cn-north-1",
+				"cn-northwest-1"
 			)
 			.required(),
 		URI_PATH_PREFIX: joi.string().allow(""),
