@@ -66,9 +66,9 @@ export class AgreementsController extends BaseController {
 	@Get("/")
 	@SuccessResponse(200, "Returns list of agreements")
 	@DescribeAction("agreements/search")
-	@DescribeResource("Organization", ({ query }) => Number(query.orgId))
-	@DescribeResource("Account", ({ query }) => Number(query.accountId))
-	@DescribeResource("User", ({ query }) => Number(query.userId))
+	@DescribeResource("Organization", ({ query }) => [Number(query.orgId)])
+	@DescribeResource("Account", ({ query }) => [Number(query.accountId)])
+	@DescribeResource("User", ({ query }) => [Number(query.userId)])
 	@DescribeResource("Document", ({ query }) => query.documentId?.map(Number))
 	@DescribeResource("Agreement", ({ query }) => query.id?.map(Number))
 	@ValidateFuncArgs(AgreementSearchParamsValidator)
@@ -93,9 +93,9 @@ export class AgreementsController extends BaseController {
 	@Post("/search")
 	@SuccessResponse(200, "Returns list of agreements")
 	@DescribeAction("agreements/search")
-	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
-	@DescribeResource("Account", ({ body }) => Number(body.accountId))
-	@DescribeResource("User", ({ body }) => Number(body.userId))
+	@DescribeResource("Organization", ({ body }) => [Number(body.orgId)])
+	@DescribeResource("Account", ({ body }) => [Number(body.accountId)])
+	@DescribeResource("User", ({ body }) => [Number(body.userId)])
 	@DescribeResource("Document", ({ body }) => body.documentId?.map(Number))
 	@DescribeResource("Agreement", ({ body }) => body.id?.map(Number))
 	@ValidateFuncArgs(AgreementSearchWithPostParamsValidator)
@@ -122,10 +122,10 @@ export class AgreementsController extends BaseController {
 	@SuccessResponse(201, "Returns created agreement")
 	@DescribeAction("agreements/create")
 	@ValidateFuncArgs(AgreementCreateParamsValidator)
-	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
-	@DescribeResource("Account", ({ body }) => Number(body.accountId))
-	@DescribeResource("User", ({ body }) => Number(body.userId))
-	@DescribeResource("Document", ({ body }) => Number(body.documentId))
+	@DescribeResource("Organization", ({ body }) => [Number(body.orgId)])
+	@DescribeResource("Account", ({ body }) => [Number(body.accountId)])
+	@DescribeResource("User", ({ body }) => [Number(body.userId)])
+	@DescribeResource("Document", ({ body }) => [Number(body.documentId)])
 	async create(@Queries() query: {}, @Body() body: AgreementCreateBodyInterface): Promise<PublicAgreementAttributes> {
 		const agreement = await this.agreementsService.create(body);
 		this.response.status(201);
@@ -148,7 +148,7 @@ export class AgreementsController extends BaseController {
 	@Get("/check")
 	@SuccessResponse(200, "Returns agreement with last document version")
 	@DescribeAction("agreements/check")
-	@DescribeResource("Account", ({ query }) => Number(query.accountId))
+	@DescribeResource("Account", ({ query }) => [Number(query.accountId)])
 	@HashFields(["documentCode", "title", "code", "text"])
 	@ValidateFuncArgs(AgreementCheckParamsValidator)
 	async check(
@@ -177,7 +177,7 @@ export class AgreementsController extends BaseController {
 	@Get("/:agreementId")
 	@SuccessResponse(200, "Returns agreement")
 	@DescribeAction("agreements/read")
-	@DescribeResource("Agreement", ({ params }) => Number(params.agreementId))
+	@DescribeResource("Agreement", ({ params }) => [Number(params.agreementId)])
 	@ValidateFuncArgs(AgreementReadParamsValidator)
 	async get(@Path() agreementId: number): Promise<PublicAgreementAttributes> {
 		const agreement = await this.agreementsRepository.read(agreementId);
@@ -201,7 +201,7 @@ export class AgreementsController extends BaseController {
 	@Put("/:agreementId")
 	@SuccessResponse(200, "Returns updated agreement")
 	@DescribeAction("agreements/update")
-	@DescribeResource("Agreement", ({ params }) => Number(params.agreementId))
+	@DescribeResource("Agreement", ({ params }) => [Number(params.agreementId)])
 	@ValidateFuncArgs(AgreementUpdateParamsValidator)
 	async update(
 		@Path() agreementId: number,
@@ -227,7 +227,7 @@ export class AgreementsController extends BaseController {
 	@Delete("/:agreementId")
 	@SuccessResponse(204, "Returns nothing")
 	@DescribeAction("agreements/delete")
-	@DescribeResource("Agreement", ({ params }) => Number(params.agreementId))
+	@DescribeResource("Agreement", ({ params }) => [Number(params.agreementId)])
 	@ValidateFuncArgs(AgreementDeleteParamsValidator)
 	async delete(@Path() agreementId: number): Promise<void> {
 		const agreement = await this.agreementsRepository.read(agreementId);
