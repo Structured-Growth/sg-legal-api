@@ -4,7 +4,7 @@ branches:
     channel: beta
     prerelease: beta
   - name: "feature/SG-*"
-    prerelease: true
+    prerelease: feature
 plugins:
   - '@semantic-release/commit-analyzer'
   - - '@semantic-release/release-notes-generator'
