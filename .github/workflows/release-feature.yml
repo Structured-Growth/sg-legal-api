@@ -76,7 +76,7 @@ jobs:
     name: Notify Slack (demo)
     uses: ./.github/workflows/slack-notification-rel-demo.yml
     with:
-      env: "Create Demo Release"
+      env: "Create Feature Release"
       workflow_run_id: ${{ github.run_id }}
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
