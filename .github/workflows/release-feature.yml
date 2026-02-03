@@ -3,7 +3,7 @@ name: Release Feature
 on:
   push:
     branches:
-      - "feature/SG-*"
+      - "feature-SG-*"
 
 permissions:
   contents: write
