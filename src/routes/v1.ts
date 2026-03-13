@@ -40,6 +40,9 @@ router.get(pathPrefix + '/v1/agreements/:agreementId', handleRequest(Controllers
 router.put(pathPrefix + '/v1/agreements/:agreementId', handleRequest(Controllers.AgreementsController, "update", handlerOpts));
 router.delete(pathPrefix + '/v1/agreements/:agreementId', handleRequest(Controllers.AgreementsController, "delete", handlerOpts));
 
+//DocsController
+router.get(pathPrefix + '/v1/docs/swagger.json', handleRequest(Controllers.DocsController, "getSwagger", handlerOpts));
+
 //ResolverController
 router.get(pathPrefix + '/v1/resolver/resolve', handleRequest(Controllers.ResolverController, "resolve", handlerOpts));
 router.get(pathPrefix + '/v1/resolver/actions', handleRequest(Controllers.ResolverController, "actions", handlerOpts));
@@ -63,6 +66,7 @@ export const actionToRouteMap = {
 	"AgreementsController.get": 'get /v1/agreements/:agreementId',
 	"AgreementsController.update": 'put /v1/agreements/:agreementId',
 	"AgreementsController.delete": 'delete /v1/agreements/:agreementId',
+	"DocsController.getSwagger": 'get /v1/docs/swagger.json',
 	"ResolverController.resolve": 'get /v1/resolver/resolve',
 	"ResolverController.actions": 'get /v1/resolver/actions',
 	"ResolverController.models": 'get /v1/resolver/models',
