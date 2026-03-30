@@ -7,6 +7,7 @@ export interface DocumentCreateBodyInterface {
 	text: string;
 	version: number;
 	locale?: string;
+	metadata?: Record<string, unknown> | null;
 	status: "active" | "inactive";
 	date: Date;
 }

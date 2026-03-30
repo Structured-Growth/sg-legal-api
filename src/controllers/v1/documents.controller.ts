@@ -36,6 +36,7 @@ export const publicDocumentAttributes = [
 	"text",
 	"version",
 	"locale",
+	"metadata",
 	"status",
 	"date",
 	"createdAt",
@@ -121,7 +122,10 @@ export class DocumentsController extends BaseController {
 	@HashFields(["title", "code", "text"])
 	@DescribeResource("Organization", ({ body }) => [Number(body.orgId)])
 	async create(@Queries() query: {}, @Body() body: DocumentCreateBodyInterface): Promise<PublicDocumentAttributes> {
-		const document = await this.documentsService.create(body);
+		const document = await this.documentsService.create(
+			body,
+			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+		);
 		this.response.status(201);
 
 		await this.eventBus.publish(
@@ -174,7 +178,11 @@ export class DocumentsController extends BaseController {
 		@Queries() query: {},
 		@Body() body: DocumentUpdateBodyInterface
 	): Promise<PublicDocumentAttributes> {
-		const document = await this.documentsService.update(documentId, body);
+		const document = await this.documentsService.update(
+			documentId,
+			body,
+			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+		);
 
 		await this.eventBus.publish(
 			new EventMutation(this.principal.arn, document.arn, `${this.appPrefix}:documents/update`, JSON.stringify(body))

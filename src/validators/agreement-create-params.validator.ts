@@ -8,6 +8,7 @@ export const AgreementCreateParamsValidator = joi.object({
 		documentId: joi.number().positive().required().label("validator.agreements.documentId"),
 		accountId: joi.number().positive().required().label("validator.agreements.accountId"),
 		userId: joi.number().positive().required().label("validator.agreements.userId"),
+		metadata: joi.object().allow(null).label("validator.agreements.metadata"),
 		status: joi.string().required().valid("active", "inactive", "archived"),
 		date: joi.date().iso().required().label("validator.agreements.date"),
 	}),

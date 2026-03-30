@@ -5,6 +5,7 @@ export interface AgreementCreateBodyInterface {
 	documentId: number;
 	accountId: number;
 	userId: number;
+	metadata?: Record<string, unknown> | null;
 	status: "active" | "inactive";
 	date: Date;
 }

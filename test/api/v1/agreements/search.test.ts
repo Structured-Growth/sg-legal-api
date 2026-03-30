@@ -1,14 +1,20 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { seedAgreementCustomFields } from "../../../common/seed-custom-fields";
 
 describe("GET /api/v1/agreements", () => {
 	const { server, context } = initTest();
-	const uniqueCode = `contract-${Date.now()}`;
+	const orgId = Math.floor(Math.random() * 1000000) + 1;
+
+	beforeEach(async () => {
+		await seedAgreementCustomFields(orgId);
+	});
 
 	it("Should create agreement", async () => {
+		const uniqueCode = `contract-${Date.now()}`;
 		const { statusCode: statusCodeDocument, body: bodyDocument } = await server.post("/v1/documents").send({
-			orgId: 49,
+			orgId,
 			region: "us",
 			title: "Contract",
 			code: uniqueCode,
@@ -23,11 +29,14 @@ describe("GET /api/v1/agreements", () => {
 		context["documentId"] = bodyDocument.id;
 
 		const { statusCode, body } = await server.post("/v1/agreements").send({
-			orgId: 49,
+			orgId,
 			region: "us",
 			documentId: context.documentId,
 			accountId: 45,
 			userId: 15,
+			metadata: {
+				signSource: "web",
+			},
 			status: "active",
 			date: new Date().toISOString(),
 		});
@@ -66,7 +75,7 @@ describe("GET /api/v1/agreements", () => {
 	it("Should return agreement", async () => {
 		const { statusCode, body } = await server.get("/v1/agreements").query({
 			"id[0]": context.agreementId,
-			orgId: 49,
+			orgId,
 			"documentId[0]": context.documentId,
 			accountId: 45,
 			userId: 15,
@@ -74,7 +83,7 @@ describe("GET /api/v1/agreements", () => {
 		});
 		assert.equal(statusCode, 200);
 		assert.equal(body.data[0].id, context.agreementId);
-		assert.equal(body.data[0].orgId, 49);
+		assert.equal(body.data[0].orgId, orgId);
 		assert.equal(body.data[0].documentId, context.documentId);
 		assert.equal(body.data[0].accountId, 45);
 		assert.equal(body.data[0].userId, 15);
@@ -87,18 +96,35 @@ describe("GET /api/v1/agreements", () => {
 		assert.equal(body.limit, 20);
 	});
 
+	it("Should return agreement filtered by metadata with GET", async () => {
+		const { statusCode, body } = await server.get("/v1/agreements").query({
+			"id[0]": context.agreementId,
+			metadata: JSON.stringify({
+				signSource: "web",
+			}),
+		});
+
+		assert.equal(statusCode, 200);
+		assert.lengthOf(body.data, 1);
+		assert.equal(body.data[0].id, context.agreementId);
+		assert.equal(body.data[0].metadata.signSource, "web");
+	});
+
 	it("Should search with POST method", async () => {
 		const { statusCode, body } = await server.post("/v1/agreements/search").send({
 			id: [context.agreementId],
-			orgId: 49,
+			orgId,
 			documentId: [context.documentId],
 			accountId: 45,
 			userId: 15,
+			metadata: JSON.stringify({
+				signSource: "web",
+			}),
 			status: "active",
 		});
 		assert.equal(statusCode, 200);
 		assert.equal(body.data[0].id, context.agreementId);
-		assert.equal(body.data[0].orgId, 49);
+		assert.equal(body.data[0].orgId, orgId);
 		assert.equal(body.data[0].documentId, context.documentId);
 		assert.equal(body.data[0].accountId, 45);
 		assert.equal(body.data[0].userId, 15);
@@ -107,6 +133,7 @@ describe("GET /api/v1/agreements", () => {
 		assert.equal(body.data[0].status, "active");
 		assert.isString(body.data[0].date);
 		assert.isString(body.data[0].arn);
+		assert.equal(body.data[0].metadata.signSource, "web");
 		assert.equal(body.page, 1);
 		assert.equal(body.limit, 20);
 	});

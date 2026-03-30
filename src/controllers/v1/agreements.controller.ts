@@ -36,6 +36,7 @@ export const publicAgreementAttributes = [
 	"documentId",
 	"accountId",
 	"userId",
+	"metadata",
 	"status",
 	"date",
 	"createdAt",
@@ -127,7 +128,10 @@ export class AgreementsController extends BaseController {
 	@DescribeResource("User", ({ body }) => [Number(body.userId)])
 	@DescribeResource("Document", ({ body }) => [Number(body.documentId)])
 	async create(@Queries() query: {}, @Body() body: AgreementCreateBodyInterface): Promise<PublicAgreementAttributes> {
-		const agreement = await this.agreementsService.create(body);
+		const agreement = await this.agreementsService.create(
+			body,
+			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+		);
 		this.response.status(201);
 
 		await this.eventBus.publish(
@@ -208,7 +212,11 @@ export class AgreementsController extends BaseController {
 		@Queries() query: {},
 		@Body() body: AgreementUpdateBodyInterface
 	): Promise<PublicAgreementAttributes> {
-		const agreement = await this.agreementsRepository.update(agreementId, body);
+		const agreement = await this.agreementsService.update(
+			agreementId,
+			body,
+			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+		);
 
 		await this.eventBus.publish(
 			new EventMutation(this.principal.arn, agreement.arn, `${this.appPrefix}:agreements/update`, JSON.stringify(body))

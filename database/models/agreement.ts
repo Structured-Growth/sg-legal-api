@@ -5,6 +5,7 @@ import Document from "./document";
 export interface AgreementAttributes extends DefaultModelInterface {
 	documentId: number;
 	userId: number;
+	metadata?: Record<string, unknown> | null;
 	date: Date | any;
 	status: "active" | "inactive" | "archived";
 }
@@ -12,7 +13,7 @@ export interface AgreementAttributes extends DefaultModelInterface {
 export interface AgreementCreationAttributes
 	extends Omit<AgreementAttributes, "id" | "arn" | "createdAt" | "updatedAt" | "deletedAt"> {}
 
-export interface AgreementUpdateAttributes extends Partial<Pick<AgreementCreationAttributes, "status" | "date">> {}
+export interface AgreementUpdateAttributes extends Partial<Pick<AgreementCreationAttributes, "status" | "metadata" | "date">> {}
 
 @Table({
 	tableName: "agreements",
@@ -39,6 +40,9 @@ export class Agreement extends Model<AgreementAttributes, AgreementCreationAttri
 
 	@Column
 	userId: number;
+
+	@Column(DataType.JSONB)
+	metadata: Record<string, unknown> | null;
 
 	@Column(DataType.STRING)
 	status: AgreementAttributes["status"];
