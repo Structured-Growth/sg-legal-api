@@ -9,10 +9,7 @@ export const AgreementSearchWithPostParamsValidator = joi.object({
 			documentId: joi.array().items(joi.number().positive()).label("validator.agreements.documentId"),
 			accountId: joi.number().positive().label("validator.agreements.accountId"),
 			userId: joi.number().positive().label("validator.agreements.userId"),
-			metadata: joi
-				.alternatives()
-				.try(joi.object().allow(null), joi.string().max(2000))
-				.label("validator.agreements.metadata"),
+			metadata: joi.string().max(2000).label("validator.agreements.metadata"),
 			status: joi.string().valid("active", "inactive", "archived"),
 			date: joi.date().iso().label("validator.agreements.date"),
 		})

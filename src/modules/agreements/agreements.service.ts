@@ -45,7 +45,11 @@ export class AgreementsService {
 		});
 	}
 
-	public async update(id: number, params: AgreementUpdateBodyInterface, inheritedOrgIds: number[] = []): Promise<Agreement> {
+	public async update(
+		id: number,
+		params: AgreementUpdateBodyInterface,
+		inheritedOrgIds: number[] = []
+	): Promise<Agreement> {
 		const agreement = await this.agreementRepository.read(id);
 
 		if (!agreement) {
