@@ -7,13 +7,15 @@ export interface DocumentAttributes extends Omit<DefaultModelInterface, "account
 	text: string;
 	version: number;
 	locale?: string | null;
-	metadata?: Record<string, unknown> | null;
+	metadata: Record<string, unknown>;
 	date: Date | any;
 	status: "active" | "inactive" | "archived";
 }
 
 export interface DocumentCreationAttributes
-	extends Omit<DocumentAttributes, "id" | "arn" | "createdAt" | "updatedAt" | "deletedAt"> {}
+	extends Omit<DocumentAttributes, "id" | "arn" | "createdAt" | "updatedAt" | "deletedAt" | "metadata"> {
+	metadata?: Record<string, unknown>;
+}
 
 export interface DocumentUpdateAttributes
 	extends Partial<
@@ -49,7 +51,7 @@ export class Document extends Model<DocumentAttributes, DocumentCreationAttribut
 	locale: string | null;
 
 	@Column(DataType.JSONB)
-	metadata: Record<string, unknown> | null;
+	metadata: Record<string, unknown>;
 
 	@Column(DataType.STRING)
 	status: DocumentAttributes["status"];

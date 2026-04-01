@@ -10,7 +10,7 @@ export const DocumentCreateParamsValidator = joi.object({
 		text: joi.string().required().label("validator.documents.text"),
 		version: joi.number().positive().required().label("validator.documents.version"),
 		locale: joi.string().max(15).label("validator.documents.locale"),
-		metadata: joi.object().allow(null).label("validator.documents.metadata"),
+		metadata: joi.object().label("validator.documents.metadata"),
 		status: joi.string().required().valid("active", "inactive", "archived"),
 		date: joi.date().iso().required().label("validator.documents.date"),
 	}),

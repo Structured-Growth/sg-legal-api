@@ -19,7 +19,7 @@ export class AgreementsService {
 		this.i18n = this.getI18n();
 	}
 
-	public async create(params: AgreementCreationAttributes, inheritedOrgIds: number[] = []): Promise<Agreement> {
+	public async create(params: AgreementCreationAttributes, parentOrgIds: number[] = []): Promise<Agreement> {
 		const agreement = await this.agreementRepository.search({
 			documentId: [params.documentId],
 			accountId: params.accountId,
@@ -31,7 +31,7 @@ export class AgreementsService {
 			});
 		}
 
-		await this.customFieldService.validate("Agreement", params.metadata, params.orgId, inheritedOrgIds);
+		await this.customFieldService.validate("Agreement", params.metadata, [params.orgId, ...parentOrgIds]);
 
 		return this.agreementRepository.create({
 			orgId: params.orgId,
@@ -39,7 +39,7 @@ export class AgreementsService {
 			documentId: params.documentId,
 			accountId: params.accountId,
 			userId: params.userId,
-			metadata: params.metadata ?? null,
+			metadata: params.metadata ?? {},
 			status: params.status,
 			date: params.date,
 		});
@@ -48,7 +48,7 @@ export class AgreementsService {
 	public async update(
 		id: number,
 		params: AgreementUpdateBodyInterface,
-		inheritedOrgIds: number[] = []
+		parentOrgIds: number[] = []
 	): Promise<Agreement> {
 		const agreement = await this.agreementRepository.read(id);
 
@@ -58,13 +58,11 @@ export class AgreementsService {
 			);
 		}
 
-		const nextAgreement = {
-			...agreement.toJSON(),
-			...params,
-			metadata: params.metadata !== undefined ? params.metadata : agreement.metadata,
-		};
-
-		await this.customFieldService.validate("Agreement", nextAgreement.metadata, agreement.orgId, inheritedOrgIds);
+		await this.customFieldService.validate(
+			"Agreement",
+			params.metadata !== undefined ? params.metadata : agreement.metadata,
+			[agreement.orgId, ...parentOrgIds]
+		);
 
 		return this.agreementRepository.update(id, params);
 	}

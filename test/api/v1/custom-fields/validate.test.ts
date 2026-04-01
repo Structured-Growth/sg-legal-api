@@ -5,9 +5,12 @@ import { seedDocumentCustomFields } from "../../../common/seed-custom-fields";
 
 describe("POST /api/v1/custom-fields/validate", () => {
 	const { server } = initTest();
-	const orgId = Math.floor(Math.random() * 1000000) + 1;
+	let orgId: number;
 
-	beforeEach(() => seedDocumentCustomFields(orgId));
+	beforeEach(async () => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
+		await seedDocumentCustomFields(orgId);
+	});
 
 	it("Should return successful validation result", async () => {
 		const { statusCode, body } = await server.post("/v1/custom-fields/validate").send({
@@ -28,7 +31,9 @@ describe("POST /api/v1/custom-fields/validate", () => {
 			entity: "Document",
 			orgId,
 			data: {
-				approvalCode: "O",
+				approvalCode: {
+					invalid: true,
+				},
 			},
 		});
 

@@ -26,7 +26,6 @@ import { DocumentUpdateParamsValidator } from "../../validators/document-update-
 import { DocumentDeleteParamsValidator } from "../../validators/document-delete-params.validator";
 import { EventMutation } from "@structured-growth/microservice-sdk";
 
-// For devops
 export const publicDocumentAttributes = [
 	"id",
 	"orgId",
@@ -124,7 +123,7 @@ export class DocumentsController extends BaseController {
 	async create(@Queries() query: {}, @Body() body: DocumentCreateBodyInterface): Promise<PublicDocumentAttributes> {
 		const document = await this.documentsService.create(
 			body,
-			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+			"parentOrgIds" in this.principal ? this.principal.parentOrgIds : []
 		);
 		this.response.status(201);
 
@@ -181,7 +180,7 @@ export class DocumentsController extends BaseController {
 		const document = await this.documentsService.update(
 			documentId,
 			body,
-			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+			"parentOrgIds" in this.principal ? this.principal.parentOrgIds : []
 		);
 
 		await this.eventBus.publish(

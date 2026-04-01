@@ -17,12 +17,9 @@ export class CustomFieldService {
 
 	public async search(
 		params: CustomFieldSearchParamsInterface,
-		inheritedOrgIds: number[] = []
+		parentOrgIds: number[] = []
 	): Promise<SearchResultInterface<CustomField>> {
-		const orgIds =
-			params.includeInherited === false
-				? [params.orgId]
-				: [params.orgId, ...this.normalizeInheritedOrgIds(params.orgId, inheritedOrgIds)];
+		const orgIds = params.includeInherited === false ? [params.orgId] : [params.orgId, ...parentOrgIds];
 
 		return this.customFieldRepository.search({
 			...params,
@@ -33,8 +30,7 @@ export class CustomFieldService {
 	public async validate(
 		entityName: string,
 		data: Record<string, unknown> | null | undefined,
-		orgId: number,
-		inheritedOrgIds: number[] = [],
+		orgIds: number[] = [],
 		throwError = true
 	): Promise<{
 		valid: boolean;
@@ -45,7 +41,7 @@ export class CustomFieldService {
 			where: {
 				entity: entityName,
 				orgId: {
-					[Op.or]: [orgId, ...this.normalizeInheritedOrgIds(orgId, inheritedOrgIds)],
+					[Op.or]: orgIds,
 				},
 			},
 		});
@@ -67,25 +63,5 @@ export class CustomFieldService {
 		}
 
 		return { valid, message, errors };
-	}
-
-	private normalizeInheritedOrgIds(orgId: number, inheritedOrgIds: number[]): number[] {
-		if (!Array.isArray(inheritedOrgIds)) {
-			return [];
-		}
-
-		const normalizedOrgIds = new Set<number>();
-
-		for (const inheritedOrgId of inheritedOrgIds) {
-			const normalizedOrgId = Number(inheritedOrgId);
-
-			if (!Number.isInteger(normalizedOrgId) || normalizedOrgId <= 0 || normalizedOrgId === orgId) {
-				continue;
-			}
-
-			normalizedOrgIds.add(normalizedOrgId);
-		}
-
-		return Array.from(normalizedOrgIds);
 	}
 }

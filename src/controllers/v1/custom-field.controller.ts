@@ -10,6 +10,7 @@ import {
 	SearchResultInterface,
 	I18nType,
 	EventMutation,
+	RegionEnum,
 } from "@structured-growth/microservice-sdk";
 import { pick } from "lodash";
 import { CustomFieldAttributes } from "../../../database/models/custom-field";
@@ -73,7 +74,7 @@ export class CustomFieldsController extends BaseController {
 				...query,
 				includeInherited: query.includeInherited?.toString() !== "false",
 			},
-			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+			"parentOrgIds" in this.principal ? this.principal.parentOrgIds : []
 		);
 
 		return {
@@ -98,8 +99,7 @@ export class CustomFieldsController extends BaseController {
 		return this.customFieldService.validate(
 			body.entity,
 			body.data,
-			body.orgId,
-			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : [],
+			[body.orgId, ...("parentOrgIds" in this.principal ? this.principal.parentOrgIds : [])],
 			false
 		);
 	}
@@ -114,7 +114,16 @@ export class CustomFieldsController extends BaseController {
 		@Queries() query: {},
 		@Body() body: CustomFieldCreateBodyInterface
 	): Promise<PublicCustomFieldAttributes> {
-		const customField = await this.customFieldRepository.create(body);
+		let region = RegionEnum.US;
+
+		if ("region" in this.principal) {
+			region = this.principal.region;
+		}
+
+		const customField = await this.customFieldRepository.create({
+			...body,
+			region,
+		});
 		this.response.status(201);
 
 		await this.eventBus.publish(

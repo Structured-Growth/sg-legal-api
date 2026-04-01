@@ -6,7 +6,7 @@ export interface AgreementSearchParamsInterface extends Omit<DefaultSearchParams
 	documentId?: number[];
 	accountId?: number;
 	userId?: number;
-	metadata?: string;
+	metadata?: Record<string, unknown>;
 	status?: AgreementAttributes["status"];
 	date?: Date;
 }

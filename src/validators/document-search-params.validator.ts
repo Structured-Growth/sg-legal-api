@@ -9,7 +9,7 @@ export const DocumentSearchParamsValidator = joi.object({
 			code: joi.string().max(100).label("validator.documents.code"),
 			version: joi.number().positive().label("validator.documents.version"),
 			locale: joi.array().items(joi.string().max(15)).label("validator.documents.locale"),
-			metadata: joi.string().max(2000).label("validator.documents.metadata"),
+			metadata: joi.object().label("validator.documents.metadata"),
 			status: joi.string().valid("active", "inactive", "archived"),
 			date: joi.date().iso().label("validator.documents.date"),
 		})

@@ -5,9 +5,10 @@ import { seedAgreementCustomFields } from "../../../common/seed-custom-fields";
 
 describe("PUT /api/v1/agreements/:agreementId", () => {
 	const { server, context } = initTest();
-	const orgId = Math.floor(Math.random() * 1000000) + 1;
+	let orgId: number;
 
 	beforeEach(async () => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
 		await seedAgreementCustomFields(orgId);
 
 		const document = await server.post("/v1/documents").send({
@@ -37,21 +38,43 @@ describe("PUT /api/v1/agreements/:agreementId", () => {
 		context.agreementId = agreement.body.id;
 	});
 
-	it("Should update metadata", async () => {
+	it("Should update agreement", async () => {
+		const date = new Date().toISOString();
+
 		const { statusCode, body } = await server.put(`/v1/agreements/${context.agreementId}`).send({
 			metadata: {
 				signSource: "portal",
 			},
+			status: "inactive",
+			date,
 		});
 
 		assert.equal(statusCode, 200);
 		assert.equal(body.metadata.signSource, "portal");
+		assert.equal(body.status, "inactive");
+		assert.equal(body.date, date);
 	});
 
-	it("Should return validation error for invalid metadata", async () => {
+	it("Should return Joi validation error for invalid request body", async () => {
+		const { statusCode, body } = await server.put(`/v1/agreements/${context.agreementId}`).send({
+			metadata: "bad",
+			status: "bad",
+			date: "bad",
+		});
+
+		assert.equal(statusCode, 422);
+		assert.equal(body.name, "ValidationError");
+		assert.isString(body.validation.body.metadata[0]);
+		assert.isString(body.validation.body.status[0]);
+		assert.isString(body.validation.body.date[0]);
+	});
+
+	it("Should return custom fields validation error for invalid metadata", async () => {
 		const { statusCode, body } = await server.put(`/v1/agreements/${context.agreementId}`).send({
 			metadata: {
-				signSource: 100,
+				signSource: {
+					invalid: true,
+				},
 			},
 		});
 
@@ -60,12 +83,4 @@ describe("PUT /api/v1/agreements/:agreementId", () => {
 		assert.isString(body.validation.body.metadata.signSource[0]);
 	});
 
-	it("Should allow null metadata", async () => {
-		const { statusCode, body } = await server.put(`/v1/agreements/${context.agreementId}`).send({
-			metadata: null,
-		});
-
-		assert.equal(statusCode, 200);
-		assert.isNull(body.metadata);
-	});
 });
