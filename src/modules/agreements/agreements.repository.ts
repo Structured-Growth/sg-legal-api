@@ -18,7 +18,9 @@ export class AgreementsRepository
 	constructor(@inject("i18n") private getI18n: () => I18nType) {
 		this.i18n = this.getI18n();
 	}
-	public async search(params: AgreementSearchParamsInterface): Promise<SearchResultInterface<Agreement>> {
+	public async search(
+		params: AgreementSearchParamsInterface & { metadata?: Record<string, unknown> }
+	): Promise<SearchResultInterface<Agreement>> {
 		const page = params.page || 1;
 		let limit = params.limit || 20;
 		let offset = (page - 1) * limit;

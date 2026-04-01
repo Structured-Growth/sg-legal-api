@@ -18,7 +18,9 @@ export class DocumentsRepository
 	constructor(@inject("i18n") private getI18n: () => I18nType) {
 		this.i18n = this.getI18n();
 	}
-	public async search(params: DocumentSearchParamsInterface): Promise<SearchResultInterface<Document>> {
+	public async search(
+		params: DocumentSearchParamsInterface & { metadata?: Record<string, unknown> }
+	): Promise<SearchResultInterface<Document>> {
 		const page = params.page || 1;
 		let limit = params.limit || 20;
 		let offset = (page - 1) * limit;
