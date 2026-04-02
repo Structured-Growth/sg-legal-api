@@ -130,7 +130,7 @@ export class AgreementsController extends BaseController {
 	async create(@Queries() query: {}, @Body() body: AgreementCreateBodyInterface): Promise<PublicAgreementAttributes> {
 		const agreement = await this.agreementsService.create(
 			body,
-			"parentOrgIds" in this.principal ? this.principal.parentOrgIds : []
+			this.principal.parentOrgIds ?? []
 		);
 		this.response.status(201);
 
@@ -215,7 +215,7 @@ export class AgreementsController extends BaseController {
 		const agreement = await this.agreementsService.update(
 			agreementId,
 			body,
-			"parentOrgIds" in this.principal ? this.principal.parentOrgIds : []
+			this.principal.parentOrgIds ?? []
 		);
 
 		await this.eventBus.publish(

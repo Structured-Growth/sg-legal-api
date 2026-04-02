@@ -47,6 +47,17 @@ describe("GET /api/v1/custom-fields", () => {
 		assert.isString(body.validation.query.limit[0]);
 	});
 
+	it("Should return validation error for invalid name characters", async () => {
+		const { statusCode, body } = await server.get("/v1/custom-fields").query({
+			orgId,
+			"name[0]": "approval code!",
+		});
+
+		assert.equal(statusCode, 422);
+		assert.equal(body.name, "ValidationError");
+		assert.isString(body.validation.query.name[0][0]);
+	});
+
 	it("Should search custom fields", async () => {
 		const { statusCode, body } = await server.get("/v1/custom-fields").query({
 			orgId,

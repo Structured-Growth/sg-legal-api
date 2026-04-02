@@ -123,7 +123,7 @@ export class DocumentsController extends BaseController {
 	async create(@Queries() query: {}, @Body() body: DocumentCreateBodyInterface): Promise<PublicDocumentAttributes> {
 		const document = await this.documentsService.create(
 			body,
-			"parentOrgIds" in this.principal ? this.principal.parentOrgIds : []
+			this.principal.parentOrgIds ?? []
 		);
 		this.response.status(201);
 
@@ -180,7 +180,7 @@ export class DocumentsController extends BaseController {
 		const document = await this.documentsService.update(
 			documentId,
 			body,
-			"parentOrgIds" in this.principal ? this.principal.parentOrgIds : []
+			this.principal.parentOrgIds ?? []
 		);
 
 		await this.eventBus.publish(

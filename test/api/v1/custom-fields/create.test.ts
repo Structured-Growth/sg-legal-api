@@ -45,4 +45,34 @@ describe("POST /api/v1/custom-fields", () => {
 		assert.isString(body.validation.body.schema[0]);
 		assert.isString(body.validation.body.status[0]);
 	});
+
+	it("Should return validation error for invalid name characters", async () => {
+		const { statusCode, body } = await server.post("/v1/custom-fields").send({
+			orgId,
+			entity: "Document",
+			title: "Approval Code",
+			name: "approval code!",
+			schema: customFieldAlternativesSchema,
+			status: "active",
+		});
+
+		assert.equal(statusCode, 422);
+		assert.equal(body.name, "ValidationError");
+		assert.isString(body.validation.body.name[0]);
+	});
+
+	it("Should return validation error for duplicate custom field", async () => {
+		const { statusCode, body } = await server.post("/v1/custom-fields").send({
+			orgId,
+			entity: "Document",
+			title: "Another Approval Code",
+			name: "approvalCode",
+			schema: customFieldAlternativesSchema,
+			status: "active",
+		});
+
+		assert.equal(statusCode, 422);
+		assert.equal(body.name, "ValidationError");
+		assert.isString(body.validation.body.name[0]);
+	});
 });

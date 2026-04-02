@@ -74,7 +74,7 @@ export class CustomFieldsController extends BaseController {
 				...query,
 				includeInherited: query.includeInherited?.toString() !== "false",
 			},
-			"parentOrgIds" in this.principal ? this.principal.parentOrgIds : []
+			this.principal.parentOrgIds ?? []
 		);
 
 		return {
@@ -99,7 +99,7 @@ export class CustomFieldsController extends BaseController {
 		return this.customFieldService.validate(
 			body.entity,
 			body.data,
-			[body.orgId, ...("parentOrgIds" in this.principal ? this.principal.parentOrgIds : [])],
+			[body.orgId, ...(this.principal.parentOrgIds ?? [])],
 			false
 		);
 	}
@@ -114,15 +114,9 @@ export class CustomFieldsController extends BaseController {
 		@Queries() query: {},
 		@Body() body: CustomFieldCreateBodyInterface
 	): Promise<PublicCustomFieldAttributes> {
-		let region = RegionEnum.US;
-
-		if ("region" in this.principal) {
-			region = this.principal.region;
-		}
-
-		const customField = await this.customFieldRepository.create({
+		const customField = await this.customFieldService.create({
 			...body,
-			region,
+			region: this.principal.region ?? RegionEnum.US,
 		});
 		this.response.status(201);
 
@@ -173,7 +167,7 @@ export class CustomFieldsController extends BaseController {
 		@Queries() query: {},
 		@Body() body: CustomFieldUpdateBodyInterface
 	): Promise<PublicCustomFieldAttributes> {
-		const customField = await this.customFieldRepository.update(customFieldId, body);
+		const customField = await this.customFieldService.update(customFieldId, body);
 
 		await this.eventBus.publish(
 			new EventMutation(
