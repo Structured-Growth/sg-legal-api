@@ -128,10 +128,7 @@ export class AgreementsController extends BaseController {
 	@DescribeResource("User", ({ body }) => [Number(body.userId)])
 	@DescribeResource("Document", ({ body }) => [Number(body.documentId)])
 	async create(@Queries() query: {}, @Body() body: AgreementCreateBodyInterface): Promise<PublicAgreementAttributes> {
-		const agreement = await this.agreementsService.create(
-			body,
-			this.principal.parentOrgIds ?? []
-		);
+		const agreement = await this.agreementsService.create(body, this.principal.parentOrgIds ?? []);
 		this.response.status(201);
 
 		await this.eventBus.publish(
@@ -212,11 +209,7 @@ export class AgreementsController extends BaseController {
 		@Queries() query: {},
 		@Body() body: AgreementUpdateBodyInterface
 	): Promise<PublicAgreementAttributes> {
-		const agreement = await this.agreementsService.update(
-			agreementId,
-			body,
-			this.principal.parentOrgIds ?? []
-		);
+		const agreement = await this.agreementsService.update(agreementId, body, this.principal.parentOrgIds ?? []);
 
 		await this.eventBus.publish(
 			new EventMutation(this.principal.arn, agreement.arn, `${this.appPrefix}:agreements/update`, JSON.stringify(body))
