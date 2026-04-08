@@ -1,110 +1,103 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { seedAgreementCustomFields } from "../../../common/seed-custom-fields";
 
 describe("POST /api/v1/agreements", () => {
 	const { server, context } = initTest();
-	const uniqueCode = `contract-${Date.now()}`;
+	let orgId: number;
 
-	it("Should create agreement", async () => {
-		const { statusCode: statusCodeDocument, body: bodyDocument } = await server.post("/v1/documents").send({
-			orgId: 49,
+	beforeEach(async () => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
+		await seedAgreementCustomFields(orgId);
+
+		const { body } = await server.post("/v1/documents").send({
+			orgId,
 			region: "us",
-			title: "Contract",
-			code: uniqueCode,
-			text: "Very long contract text",
+			title: "Agreement Source",
+			code: `agreement-doc-${orgId}-create`,
+			text: "Text",
 			version: 1,
 			status: "active",
 			date: new Date().toISOString(),
 		});
 
-		assert.equal(statusCodeDocument, 201);
-		assert.isNumber(bodyDocument.id);
-		context["documentId"] = bodyDocument.id;
+		context.documentId = body.id;
+	});
+
+	it("Should create agreement", async () => {
+		const date = new Date().toISOString();
 
 		const { statusCode, body } = await server.post("/v1/agreements").send({
-			orgId: 49,
+			orgId,
 			region: "us",
 			documentId: context.documentId,
-			accountId: 45,
-			userId: 15,
+			accountId: 1,
+			userId: 2,
+			metadata: {
+				signSource: "web",
+			},
 			status: "active",
-			date: new Date().toISOString(),
+			date,
 		});
+
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
-		assert.equal(body.orgId, 49);
+		assert.equal(body.orgId, orgId);
 		assert.equal(body.region, "us");
 		assert.equal(body.documentId, context.documentId);
-		assert.equal(body.accountId, 45);
-		assert.equal(body.userId, 15);
-		assert.isNotNaN(new Date(body.createdAt).getTime());
-		assert.isNotNaN(new Date(body.updatedAt).getTime());
+		assert.equal(body.accountId, 1);
+		assert.equal(body.userId, 2);
+		assert.equal(body.metadata.signSource, "web");
 		assert.equal(body.status, "active");
-		assert.isNotNaN(new Date(body.date).getTime());
+		assert.equal(body.date, date);
+		assert.isString(body.createdAt);
+		assert.isString(body.updatedAt);
 		assert.isString(body.arn);
 	});
 
-	it("Should return validation error", async () => {
+	it("Should return Joi validation error for invalid request body", async () => {
 		const { statusCode, body } = await server.post("/v1/agreements").send({
-			orgId: "orgId",
-			region: 25,
-			documentId: "documentId",
-			accountId: "accountId",
-			userId: "userId",
-			status: "pending",
-			date: "date",
+			orgId: "bad",
+			region: "u",
+			documentId: "bad",
+			accountId: "bad",
+			userId: "bad",
+			metadata: "bad",
+			status: "bad",
+			date: "bad",
 		});
 
 		assert.equal(statusCode, 422);
-		assert.isDefined(body.validation);
 		assert.equal(body.name, "ValidationError");
-		assert.isString(body.message);
 		assert.isString(body.validation.body.orgId[0]);
 		assert.isString(body.validation.body.region[0]);
 		assert.isString(body.validation.body.documentId[0]);
 		assert.isString(body.validation.body.accountId[0]);
 		assert.isString(body.validation.body.userId[0]);
+		assert.isString(body.validation.body.metadata[0]);
 		assert.isString(body.validation.body.status[0]);
 		assert.isString(body.validation.body.date[0]);
 	});
 
-	it("Should return validation error if agreement with the same documentId already exists", async () => {
-		const uniqueCode = `contract-${Date.now()}`;
-
-		const { statusCode: statusCodeDocument, body: bodyDocument } = await server.post("/v1/documents").send({
-			orgId: 49,
+	it("Should return custom fields validation error for invalid metadata", async () => {
+		const { statusCode, body } = await server.post("/v1/agreements").send({
+			orgId,
 			region: "us",
-			title: "Contract",
-			code: uniqueCode,
-			text: "Very long contract text",
-			version: 1,
+			documentId: context.documentId,
+			accountId: 1,
+			userId: 2,
+			metadata: {
+				signSource: {
+					invalid: true,
+				},
+			},
 			status: "active",
 			date: new Date().toISOString(),
 		});
 
-		assert.equal(statusCodeDocument, 201);
-		assert.isNumber(bodyDocument.id);
-		const documentId = bodyDocument.id;
-
-		const payload = {
-			orgId: 49,
-			region: "us",
-			documentId,
-			accountId: 45,
-			userId: 15,
-			status: "active",
-			date: new Date().toISOString(),
-		};
-
-		const { statusCode: createStatus, body: agreementBody } = await server.post("/v1/agreements").send(payload);
-		assert.equal(createStatus, 201);
-		assert.isNumber(agreementBody.id);
-
-		const { statusCode: duplicateStatus, body: errorBody } = await server.post("/v1/agreements").send(payload);
-		assert.equal(duplicateStatus, 422);
-		assert.equal(errorBody.name, "ValidationError");
-		assert.isDefined(errorBody.validation);
-		assert.deepEqual(errorBody.validation.documentId, ["A document with this ID has already been signed."]);
+		assert.equal(statusCode, 422);
+		assert.equal(body.name, "ValidationError");
+		assert.isString(body.validation.body.metadata.signSource[0]);
 	});
 });

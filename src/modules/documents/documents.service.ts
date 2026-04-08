@@ -1,18 +1,20 @@
 import { autoInjectable, inject, ValidationError, I18nType, NotFoundError } from "@structured-growth/microservice-sdk";
 import { DocumentsRepository } from "./documents.repository";
 import Document, { DocumentCreationAttributes, DocumentUpdateAttributes } from "../../../database/models/document";
+import { CustomFieldService } from "../custom-fields/custom-field.service";
 
 @autoInjectable()
 export class DocumentsService {
 	private i18n: I18nType;
 	constructor(
 		@inject("DocumentsRepository") private documentRepository: DocumentsRepository,
+		@inject("CustomFieldService") private customFieldService: CustomFieldService,
 		@inject("i18n") private getI18n: () => I18nType
 	) {
 		this.i18n = this.getI18n();
 	}
 
-	public async create(params: DocumentCreationAttributes): Promise<Document> {
+	public async create(params: DocumentCreationAttributes, parentOrgIds: number[] = []): Promise<Document> {
 		const document = await this.documentRepository.search({
 			code: params.code,
 			version: params.version,
@@ -26,6 +28,8 @@ export class DocumentsService {
 			});
 		}
 
+		await this.customFieldService.validate("Document", params.metadata, [params.orgId, ...parentOrgIds]);
+
 		return this.documentRepository.create({
 			orgId: params.orgId,
 			region: params.region,
@@ -34,12 +38,13 @@ export class DocumentsService {
 			text: params.text,
 			version: params.version,
 			locale: params.locale ?? null,
+			metadata: params.metadata ?? {},
 			status: params.status,
 			date: params.date,
 		});
 	}
 
-	public async update(id: number, params: DocumentUpdateAttributes): Promise<Document> {
+	public async update(id: number, params: DocumentUpdateAttributes, parentOrgIds: number[] = []): Promise<Document> {
 		const document = await this.documentRepository.read(id);
 		if (!document) {
 			throw new NotFoundError(`${this.i18n.__("error.document.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
@@ -58,12 +63,19 @@ export class DocumentsService {
 			});
 		}
 
+		await this.customFieldService.validate(
+			"Document",
+			params.metadata !== undefined ? params.metadata : document.metadata,
+			[document.orgId, ...parentOrgIds]
+		);
+
 		return this.documentRepository.update(id, {
 			title: params.title,
 			code: params.code,
 			text: params.text,
 			version: params.version,
 			locale: params.locale ?? null,
+			metadata: params.metadata,
 			status: params.status,
 			date: params.date,
 		});

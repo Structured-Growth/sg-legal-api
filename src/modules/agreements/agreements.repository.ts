@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import {
 	autoInjectable,
 	RepositoryInterface,
@@ -18,7 +18,9 @@ export class AgreementsRepository
 	constructor(@inject("i18n") private getI18n: () => I18nType) {
 		this.i18n = this.getI18n();
 	}
-	public async search(params: AgreementSearchParamsInterface): Promise<SearchResultInterface<Agreement>> {
+	public async search(
+		params: AgreementSearchParamsInterface & { metadata?: Record<string, unknown> }
+	): Promise<SearchResultInterface<Agreement>> {
 		const page = params.page || 1;
 		let limit = params.limit || 20;
 		let offset = (page - 1) * limit;
@@ -29,6 +31,27 @@ export class AgreementsRepository
 		params.documentId && (where["documentId"] = { [Op.in]: params.documentId });
 		params.accountId && (where["accountId"] = params.accountId);
 		params.userId && (where["userId"] = params.userId);
+		if (params.metadata && typeof params.metadata === "object") {
+			where[Op.and] = where[Op.and] ?? [];
+
+			for (const [keyRaw, valRaw] of Object.entries(params.metadata)) {
+				if (valRaw === null || valRaw === undefined) continue;
+
+				const key = String(keyRaw).replace(/[^a-zA-Z0-9_-]/g, "");
+				if (!key) continue;
+
+				const value = String(valRaw).trim();
+				if (!value) continue;
+
+				const left = Sequelize.literal(`("metadata"->>'${key}')`);
+
+				if (value.includes("*")) {
+					where[Op.and].push(Sequelize.where(left, { [Op.iLike]: value.replace(/\*/g, "%") }));
+				} else {
+					where[Op.and].push(Sequelize.where(left, { [Op.eq]: value }));
+				}
+			}
+		}
 		params.status && (where["status"] = params.status);
 		params.id && (where["id"] = { [Op.in]: params.id });
 		params.date && (where["date"] = params.date);
@@ -51,7 +74,6 @@ export class AgreementsRepository
 	public async create(params: AgreementCreationAttributes): Promise<Agreement> {
 		return Agreement.create(params);
 	}
-
 	public async read(
 		id: number,
 		params?: {

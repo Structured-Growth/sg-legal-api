@@ -1,14 +1,19 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { seedAgreementCustomFields } from "../../../common/seed-custom-fields";
 
 describe("GET /api/v1/agreements", () => {
 	const { server, context } = initTest();
-	const uniqueCode = `contract-${Date.now()}`;
+	let orgId: number;
 
-	it("Should create agreement", async () => {
+	beforeEach(async () => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
+		await seedAgreementCustomFields(orgId);
+
+		const uniqueCode = `contract-${Date.now()}`;
 		const { statusCode: statusCodeDocument, body: bodyDocument } = await server.post("/v1/documents").send({
-			orgId: 49,
+			orgId,
 			region: "us",
 			title: "Contract",
 			code: uniqueCode,
@@ -23,11 +28,14 @@ describe("GET /api/v1/agreements", () => {
 		context["documentId"] = bodyDocument.id;
 
 		const { statusCode, body } = await server.post("/v1/agreements").send({
-			orgId: 49,
+			orgId,
 			region: "us",
 			documentId: context.documentId,
 			accountId: 45,
 			userId: 15,
+			metadata: {
+				signSource: "web",
+			},
 			status: "active",
 			date: new Date().toISOString(),
 		});
@@ -35,13 +43,13 @@ describe("GET /api/v1/agreements", () => {
 		assert.isNumber(body.id);
 		context["agreementId"] = body.id;
 	});
-
 	it("Should return validation error", async () => {
 		const { statusCode, body } = await server.get("/v1/agreements").query({
 			orgId: "a",
 			documentId: 0,
 			accountId: 0,
 			userId: 0,
+			metadata: "bad",
 			id: -1,
 			arn: 1,
 			page: "b",
@@ -59,6 +67,7 @@ describe("GET /api/v1/agreements", () => {
 		assert.isString(body.validation.query.accountId[0]);
 		assert.isString(body.validation.query.arn[0]);
 		assert.isString(body.validation.query.userId[0]);
+		assert.isString(body.validation.query.metadata[0]);
 		assert.isString(body.validation.query.status[0]);
 		assert.isString(body.validation.query.date[0]);
 	});
@@ -66,18 +75,22 @@ describe("GET /api/v1/agreements", () => {
 	it("Should return agreement", async () => {
 		const { statusCode, body } = await server.get("/v1/agreements").query({
 			"id[0]": context.agreementId,
-			orgId: 49,
+			orgId,
 			"documentId[0]": context.documentId,
 			accountId: 45,
 			userId: 15,
+			metadata: {
+				signSource: "web",
+			},
 			status: "active",
 		});
 		assert.equal(statusCode, 200);
 		assert.equal(body.data[0].id, context.agreementId);
-		assert.equal(body.data[0].orgId, 49);
+		assert.equal(body.data[0].orgId, orgId);
 		assert.equal(body.data[0].documentId, context.documentId);
 		assert.equal(body.data[0].accountId, 45);
 		assert.equal(body.data[0].userId, 15);
+		assert.equal(body.data[0].metadata.signSource, "web");
 		assert.isString(body.data[0].createdAt);
 		assert.isString(body.data[0].updatedAt);
 		assert.equal(body.data[0].status, "active");
@@ -90,15 +103,18 @@ describe("GET /api/v1/agreements", () => {
 	it("Should search with POST method", async () => {
 		const { statusCode, body } = await server.post("/v1/agreements/search").send({
 			id: [context.agreementId],
-			orgId: 49,
+			orgId,
 			documentId: [context.documentId],
 			accountId: 45,
 			userId: 15,
+			metadata: {
+				signSource: "web",
+			},
 			status: "active",
 		});
 		assert.equal(statusCode, 200);
 		assert.equal(body.data[0].id, context.agreementId);
-		assert.equal(body.data[0].orgId, 49);
+		assert.equal(body.data[0].orgId, orgId);
 		assert.equal(body.data[0].documentId, context.documentId);
 		assert.equal(body.data[0].accountId, 45);
 		assert.equal(body.data[0].userId, 15);
@@ -107,6 +123,7 @@ describe("GET /api/v1/agreements", () => {
 		assert.equal(body.data[0].status, "active");
 		assert.isString(body.data[0].date);
 		assert.isString(body.data[0].arn);
+		assert.equal(body.data[0].metadata.signSource, "web");
 		assert.equal(body.page, 1);
 		assert.equal(body.limit, 20);
 	});

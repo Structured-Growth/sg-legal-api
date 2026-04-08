@@ -7,6 +7,11 @@ export interface DocumentSearchParamsInterface extends Omit<DefaultSearchParamsI
 	code?: string;
 	version?: number;
 	locale?: string[];
+	/**
+	 * Search by custom entity fields.
+	 * Example: metadata[approvalCode]=OK
+	 */
+	"metadata[customFieldName]"?: string;
 	status?: DocumentAttributes["status"];
 	date?: Date;
 }

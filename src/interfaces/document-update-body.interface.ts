@@ -6,6 +6,7 @@ export interface DocumentUpdateBodyInterface {
 	text?: string;
 	version?: number;
 	locale?: string;
+	metadata?: Record<string, unknown>;
 	status?: DocumentAttributes["status"];
 	date?: Date;
 }

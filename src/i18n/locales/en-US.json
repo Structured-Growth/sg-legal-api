@@ -14,6 +14,10 @@
       "document_signed": "A document with this ID has already been signed.",
       "document": "Document with code"
     },
+    "custom_field": {
+      "name": "Custom Field",
+      "custom_field_created": "A custom field with this orgId, entity and name has already been created."
+    },
     "document": {
       "name": "Document",
       "document_created": "A document with this code, version, orgId and locale has already been created."
@@ -25,7 +29,8 @@
       "arn": "Entity ARNs",
       "page": "Page",
       "limit": "Limit",
-      "sort": "Sort"
+      "sort": "Sort",
+      "metadata": "Metadata"
     },
     "agreements": {
       "orgId": "Organization Id",
@@ -35,7 +40,19 @@
       "userId": "User ID",
       "date": "Date",
       "documentCode": "Code",
-      "agreementId": "Agreement Id"
+      "agreementId": "Agreement Id",
+      "metadata": "Metadata"
+    },
+    "customFields": {
+      "orgId": "Organization Id",
+      "region": "Region",
+      "entity": "Entity",
+      "title": "Title",
+      "name": "Name",
+      "schema": "Schema",
+      "status": "Status",
+      "customFieldId": "Custom Field Id",
+      "includeInherited": "Include inherited"
     },
     "documents": {
       "orgId": "Organization Id",
@@ -46,7 +63,8 @@
       "version": "Version",
       "locale": "Locale",
       "date": "Date",
-      "documentId": "Document Id"
+      "documentId": "Document Id",
+      "metadata": "Metadata"
     }
   }
 }
