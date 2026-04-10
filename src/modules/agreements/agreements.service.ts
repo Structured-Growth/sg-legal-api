@@ -4,6 +4,8 @@ import { DocumentsRepository } from "../documents/documents.repository";
 import { AgreementCheckParamsInterface } from "../../interfaces/agreement-check-params.interface";
 import Agreement, { AgreementCreationAttributes } from "../../../database/models/agreement";
 import Document from "../../../database/models/document";
+import { AgreementUpdateBodyInterface } from "../../interfaces/agreement-update-body.interface";
+import { CustomFieldService } from "../custom-fields/custom-field.service";
 
 @autoInjectable()
 export class AgreementsService {
@@ -11,12 +13,13 @@ export class AgreementsService {
 	constructor(
 		@inject("AgreementsRepository") private agreementRepository: AgreementsRepository,
 		@inject("DocumentsRepository") private documentsRepository: DocumentsRepository,
+		@inject("CustomFieldService") private customFieldService: CustomFieldService,
 		@inject("i18n") private getI18n: () => I18nType
 	) {
 		this.i18n = this.getI18n();
 	}
 
-	public async create(params: AgreementCreationAttributes): Promise<Agreement> {
+	public async create(params: AgreementCreationAttributes, parentOrgIds: number[] = []): Promise<Agreement> {
 		const agreement = await this.agreementRepository.search({
 			documentId: [params.documentId],
 			accountId: params.accountId,
@@ -28,15 +31,40 @@ export class AgreementsService {
 			});
 		}
 
+		await this.customFieldService.validate("Agreement", params.metadata, [params.orgId, ...parentOrgIds]);
+
 		return this.agreementRepository.create({
 			orgId: params.orgId,
 			region: params.region,
 			documentId: params.documentId,
 			accountId: params.accountId,
 			userId: params.userId,
+			metadata: params.metadata ?? {},
 			status: params.status,
 			date: params.date,
 		});
+	}
+
+	public async update(
+		id: number,
+		params: AgreementUpdateBodyInterface,
+		parentOrgIds: number[] = []
+	): Promise<Agreement> {
+		const agreement = await this.agreementRepository.read(id);
+
+		if (!agreement) {
+			throw new NotFoundError(
+				`${this.i18n.__("error.agreement.name")} ${id} ${this.i18n.__("error.common.not_found")}`
+			);
+		}
+
+		await this.customFieldService.validate(
+			"Agreement",
+			params.metadata !== undefined ? params.metadata : agreement.metadata,
+			[agreement.orgId, ...parentOrgIds]
+		);
+
+		return this.agreementRepository.update(id, params);
 	}
 
 	public async check(

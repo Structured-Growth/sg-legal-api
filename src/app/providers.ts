@@ -18,6 +18,8 @@ import { DocumentsRepository } from "../modules/documents/documents.repository";
 import { DocumentsService } from "../modules/documents/documents.service";
 import { AgreementsRepository } from "../modules/agreements/agreements.repository";
 import { AgreementsService } from "../modules/agreements/agreements.service";
+import { CustomFieldRepository } from "../modules/custom-fields/custom-field.repository";
+import { CustomFieldService } from "../modules/custom-fields/custom-field.service";
 
 // load and validate env variables
 loadEnvironment();
@@ -38,10 +40,12 @@ container.register("LogWriter", logWriters[process.env.LOG_WRITER] || "ConsoleLo
 });
 container.register("DocumentsService", DocumentsService);
 container.register("AgreementsService", AgreementsService);
+container.register("CustomFieldService", CustomFieldService);
 
 // repositories
 container.register("DocumentsRepository", DocumentsRepository);
 container.register("AgreementsRepository", AgreementsRepository);
+container.register("CustomFieldRepository", CustomFieldRepository);
 
 container.register("Logger", Logger);
 container.register("App", App, { lifecycle: Lifecycle.Singleton });
