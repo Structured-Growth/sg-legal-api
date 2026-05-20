@@ -2,12 +2,24 @@ import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
 import { seedAgreementCustomFields } from "../../../common/seed-custom-fields";
+import { container } from "@structured-growth/microservice-sdk";
 
 describe("POST /api/v1/agreements", () => {
 	const { server, context } = initTest();
 	let orgId: number;
+	let publishedEvents: Array<{ arn: string; data: Record<string, unknown> }>;
 
 	beforeEach(async () => {
+		publishedEvents = [];
+		container.register("EventbusService", {
+			useValue: {
+				publish: async (event: { arn: string; data: Record<string, unknown> }) => {
+					publishedEvents.push(event);
+					return true;
+				},
+			},
+		});
+
 		orgId = Math.floor(Math.random() * 1000000) + 1;
 		await seedAgreementCustomFields(orgId);
 
@@ -23,6 +35,7 @@ describe("POST /api/v1/agreements", () => {
 		});
 
 		context.documentId = body.id;
+		publishedEvents = [];
 	});
 
 	it("Should create agreement", async () => {
@@ -54,6 +67,16 @@ describe("POST /api/v1/agreements", () => {
 		assert.isString(body.createdAt);
 		assert.isString(body.updatedAt);
 		assert.isString(body.arn);
+		assert.lengthOf(publishedEvents, 2);
+		assert.include(publishedEvents[0].arn, ":events/agreements/accepted");
+		assert.equal(publishedEvents[0].data.orgId, orgId);
+		assert.equal(publishedEvents[0].data.region, "us");
+		assert.equal(publishedEvents[0].data.documentId, context.documentId);
+		assert.equal(publishedEvents[0].data.accountId, 1);
+		assert.equal(publishedEvents[0].data.userId, 2);
+		assert.equal(publishedEvents[0].data.agreementId, body.id);
+		assert.isString(publishedEvents[0].data.createdAt as string);
+		assert.include(publishedEvents[1].arn, ":events/mutation");
 	});
 
 	it("Should return Joi validation error for invalid request body", async () => {

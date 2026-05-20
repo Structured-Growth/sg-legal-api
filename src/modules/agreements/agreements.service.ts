@@ -1,4 +1,11 @@
-import { autoInjectable, inject, NotFoundError, ValidationError, I18nType } from "@structured-growth/microservice-sdk";
+import {
+	autoInjectable,
+	inject,
+	NotFoundError,
+	ValidationError,
+	I18nType,
+	EventbusService,
+} from "@structured-growth/microservice-sdk";
 import { AgreementsRepository } from "./agreements.repository";
 import { DocumentsRepository } from "../documents/documents.repository";
 import { AgreementCheckParamsInterface } from "../../interfaces/agreement-check-params.interface";
@@ -14,18 +21,20 @@ export class AgreementsService {
 		@inject("AgreementsRepository") private agreementRepository: AgreementsRepository,
 		@inject("DocumentsRepository") private documentsRepository: DocumentsRepository,
 		@inject("CustomFieldService") private customFieldService: CustomFieldService,
+		@inject("EventbusService") private eventBus: EventbusService,
+		@inject("appPrefix") private appPrefix: string,
 		@inject("i18n") private getI18n: () => I18nType
 	) {
 		this.i18n = this.getI18n();
 	}
 
 	public async create(params: AgreementCreationAttributes, parentOrgIds: number[] = []): Promise<Agreement> {
-		const agreement = await this.agreementRepository.search({
+		const existingAgreements = await this.agreementRepository.search({
 			documentId: [params.documentId],
 			accountId: params.accountId,
 		});
 
-		if (agreement.data.length > 0) {
+		if (existingAgreements.data.length > 0) {
 			throw new ValidationError({
 				documentId: [this.i18n.__("error.agreement.document_signed")],
 			});
@@ -33,7 +42,7 @@ export class AgreementsService {
 
 		await this.customFieldService.validate("Agreement", params.metadata, [params.orgId, ...parentOrgIds]);
 
-		return this.agreementRepository.create({
+		const agreement = await this.agreementRepository.create({
 			orgId: params.orgId,
 			region: params.region,
 			documentId: params.documentId,
@@ -43,6 +52,22 @@ export class AgreementsService {
 			status: params.status,
 			date: params.date,
 		});
+
+		await this.eventBus.publish({
+			arn: `${this.appPrefix}:${params.region}:${params.orgId}:${params.accountId}:events/agreements/accepted`,
+			data: {
+				orgId: params.orgId,
+				region: params.region,
+				documentId: params.documentId,
+				accountId: params.accountId,
+				userId: params.userId,
+				agreementId: agreement.id,
+				language: this.i18n.acceptLanguage || this.i18n.locale || null,
+				createdAt: new Date().toISOString(),
+			},
+		});
+
+		return agreement;
 	}
 
 	public async update(
