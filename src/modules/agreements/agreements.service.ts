@@ -5,6 +5,7 @@ import {
 	ValidationError,
 	I18nType,
 	EventbusService,
+	Emits,
 } from "@structured-growth/microservice-sdk";
 import { AgreementsRepository } from "./agreements.repository";
 import { DocumentsRepository } from "../documents/documents.repository";
@@ -13,6 +14,7 @@ import Agreement, { AgreementCreationAttributes } from "../../../database/models
 import Document from "../../../database/models/document";
 import { AgreementUpdateBodyInterface } from "../../interfaces/agreement-update-body.interface";
 import { CustomFieldService } from "../custom-fields/custom-field.service";
+import { AgreementAcceptedEventInterface } from "./interfaces/agreement-accepted-event.interface";
 
 @autoInjectable()
 export class AgreementsService {
@@ -28,6 +30,7 @@ export class AgreementsService {
 		this.i18n = this.getI18n();
 	}
 
+	@Emits<AgreementAcceptedEventInterface>("events/agreements/accepted", [Agreement])
 	public async create(params: AgreementCreationAttributes, parentOrgIds: number[] = []): Promise<Agreement> {
 		const existingAgreements = await this.agreementRepository.search({
 			documentId: [params.documentId],
@@ -54,7 +57,8 @@ export class AgreementsService {
 		});
 
 		await this.eventBus.publish({
-			arn: `${this.appPrefix}:${params.region}:${params.orgId}:${params.accountId}:events/agreements/accepted`,
+			arn: `events/agreements/accepted`,
+			resources: [agreement.arn],
 			data: {
 				orgId: params.orgId,
 				region: params.region,
